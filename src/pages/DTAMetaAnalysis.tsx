@@ -76,6 +76,23 @@ export default function DTAMetaAnalysis() {
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload
+                    // Check if this is a study point or summary point
+                    const isSummary = !data.study
+
+                    if (isSummary) {
+                      return (
+                        <div className="bg-background border rounded-lg p-3 shadow-lg">
+                          <p className="font-semibold">Summary Estimate</p>
+                          <p className="text-sm">
+                            Sensitivity: {formatNumber((data.tpr || 0) * 100, 1)}%
+                          </p>
+                          <p className="text-sm">
+                            Specificity: {formatNumber((1 - (data.fpr || 0)) * 100, 1)}%
+                          </p>
+                        </div>
+                      )
+                    }
+
                     return (
                       <div className="bg-background border rounded-lg p-3 shadow-lg">
                         <p className="font-semibold">{data.study.name}</p>
