@@ -52,30 +52,30 @@ export default function Settings() {
             />
           </div>
 
-          <div className="flex items-center justify-between opacity-50 cursor-not-allowed">
+          <div className="flex items-center justify-between opacity-50">
             <div className="space-y-0.5 flex items-center gap-3">
               <Type className="h-5 w-5" />
               <div>
                 <label className="text-sm font-medium">Font Size</label>
                 <p className="text-sm text-muted-foreground">
-                  Adjust text size: {settings.fontSize}
+                  Current: {settings.fontSize}
                 </p>
               </div>
             </div>
-            <div className="text-xs text-muted-foreground">Coming soon</div>
+            <Switch checked={false} disabled />
           </div>
 
-          <div className="flex items-center justify-between opacity-50 cursor-not-allowed">
+          <div className="flex items-center justify-between opacity-50">
             <div className="space-y-0.5 flex items-center gap-3">
               <Eye className="h-5 w-5" />
               <div>
                 <label className="text-sm font-medium">Color Blind Mode</label>
                 <p className="text-sm text-muted-foreground">
-                  Adjust colors for accessibility
+                  Enhanced color contrast
                 </p>
               </div>
             </div>
-            <div className="text-xs text-muted-foreground">Coming soon</div>
+            <Switch checked={settings.colorBlindMode} disabled />
           </div>
         </CardContent>
       </Card>
