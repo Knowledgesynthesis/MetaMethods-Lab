@@ -48,8 +48,10 @@ export function ForestPlot({
 }: ForestPlotProps) {
   const [ref, width] = useWidth<HTMLDivElement>()
   const narrow = width < 560
+  /** phones: show only point estimates in the text column */
+  const compact = width < 480
   const labelW = narrow ? 92 : 150
-  const textW = narrow ? 112 : 150
+  const textW = compact ? 50 : 150
   const weightW = showWeights && !narrow ? 52 : 0
   const plotL = labelW + 8
   const plotR = width - textW - weightW - 8
@@ -94,7 +96,8 @@ export function ForestPlot({
           Study
         </text>
         <text x={width - weightW - 4} y={14} fontSize={11} fontWeight={600} fill={C.muted} textAnchor="end">
-          {ratio ? 'Ratio' : 'Estimate'} [95% CI]
+          {ratio ? 'Ratio' : 'Estimate'}
+          {compact ? '' : ' [95% CI]'}
         </text>
         {weightW > 0 && (
           <text x={width - 2} y={14} fontSize={11} fontWeight={600} fill={C.muted} textAnchor="end">
@@ -140,7 +143,7 @@ export function ForestPlot({
                 />
               )}
               <text x={width - weightW - 4} y={cy} dy="0.32em" fontSize={11.5} textAnchor="end" fill={C.fg} className="num">
-                {disp(r.yi)} [{disp(r.ci[0])}, {disp(r.ci[1])}]
+                {compact ? disp(r.yi) : `${disp(r.yi)} [${disp(r.ci[0])}, ${disp(r.ci[1])}]`}
               </text>
               {weightW > 0 && (
                 <text x={width - 2} y={cy} dy="0.32em" fontSize={11.5} textAnchor="end" fill={C.muted} className="num">
@@ -168,13 +171,13 @@ export function ForestPlot({
                 return (
                   <g>
                     <text x={0} y={py} dy="0.32em" fontSize={11.5} fill={C.vermillion}>
-                      Prediction interval
+                      {compact ? 'Prediction' : 'Prediction interval'}
                     </text>
                     <line x1={clampX(s.pi[0])} x2={clampX(s.pi[1])} y1={py} y2={py} stroke={C.vermillion} strokeWidth={2.5} />
                     <line x1={clampX(s.pi[0])} x2={clampX(s.pi[0])} y1={py - 4} y2={py + 4} stroke={C.vermillion} strokeWidth={2} />
                     <line x1={clampX(s.pi[1])} x2={clampX(s.pi[1])} y1={py - 4} y2={py + 4} stroke={C.vermillion} strokeWidth={2} />
                     <text x={width - weightW - 4} y={py} dy="0.32em" fontSize={11.5} textAnchor="end" fill={C.vermillion} className="num">
-                      [{disp(s.pi[0])}, {disp(s.pi[1])}]
+                      {compact ? '' : `[${disp(s.pi[0])}, ${disp(s.pi[1])}]`}
                     </text>
                   </g>
                 )
@@ -188,7 +191,7 @@ export function ForestPlot({
               </text>
               <polygon points={pts} fill={color} />
               <text x={width - weightW - 4} y={cy} dy="0.32em" fontSize={11.5} fontWeight={600} textAnchor="end" fill={color} className="num">
-                {disp(s.est)} [{disp(s.ci[0])}, {disp(s.ci[1])}]
+                {compact ? disp(s.est) : `${disp(s.est)} [${disp(s.ci[0])}, ${disp(s.ci[1])}]`}
               </text>
               {piEl}
             </g>

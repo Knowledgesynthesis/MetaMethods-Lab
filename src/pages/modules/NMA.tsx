@@ -86,7 +86,7 @@ function NetworkLab() {
         />
         <SelectField label="Reference" value={reference} onChange={setReference} options={res.treatments.map((t) => ({ value: t, label: NAMES[t] }))} />
       </div>
-      <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
+      <div className="mt-4 grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
         <div>
           <NetworkPlot
             nodes={res.treatments.map((t) => ({ id: t, label: t, size: N(t) }))}
@@ -107,7 +107,7 @@ function NetworkLab() {
             favours={[NAMES[reference], 'comparator']}
             showWeights={false}
           />
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2">
             <Stat label="τ² (common)" value={fmt(res.tau2, 4)} />
             <Stat label="Q total" value={fmt(res.Q, 1)} sub={`df ${res.df}, p ${fmtP(res.Qp)}`} />
             <Stat label="Within designs" value={fmt(res.Qhet, 1)} sub={`df ${res.dfHet}, p ${fmtP(res.QhetP)}`} />

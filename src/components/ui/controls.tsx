@@ -27,7 +27,7 @@ export function Segmented<T extends string>({
   return (
     <div className={cn('space-y-1.5', className)}>
       {label && (
-        <div id={id} className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <div id={id} className="text-xs font-medium text-muted-foreground">
           {label}
         </div>
       )}
@@ -159,7 +159,7 @@ export function SelectField<T extends string>({
   const id = useId()
   return (
     <div className={cn('space-y-1', className)}>
-      <label htmlFor={id} className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <label htmlFor={id} className="block text-xs font-medium text-muted-foreground">
         {label}
       </label>
       <select
@@ -222,7 +222,7 @@ export function Stat({
 }) {
   return (
     <div className="rounded-lg border bg-card px-3 py-2.5">
-      <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div
         className={cn(
           'num mt-0.5 font-mono text-lg font-semibold leading-tight',

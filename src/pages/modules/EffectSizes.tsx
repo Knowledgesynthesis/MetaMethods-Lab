@@ -39,7 +39,7 @@ function TwoByTwoLab() {
   }, [ai, n1, ci, n2, valid])
   return (
     <Lab title="Lab 1 · 2×2 calculator" description="Enter one trial's counts. Ratios are computed on the log scale (where their sampling distribution is approximately normal) and back-transformed.">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,320px)_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="space-y-3">
           <div className="grid grid-cols-[auto_1fr_1fr] items-end gap-2 text-sm">
             <span />
@@ -121,7 +121,7 @@ function OrRrLab() {
   const abs = absoluteFromRelative(p0, 'OR', or)
   return (
     <Lab title="Lab 2 · When does an odds ratio approximate a risk ratio?" description="Hold the OR fixed and change the control-group risk.">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,300px)_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
         <div className="space-y-4">
           <SliderField label="Odds ratio" value={or} onChange={setOr} min={0.1} max={3} step={0.05} format={(v) => fmt(v)} />
           <SliderField label="Control-group risk" value={p0} onChange={setP0} min={0.01} max={0.9} step={0.01} format={(v) => `${Math.round(v * 100)}%`} />
@@ -179,7 +179,7 @@ function ContinuousLab() {
   }, [ok, m1, s1, n1, m2, s2, n2])
   return (
     <Lab title="Lab 3 · Continuous outcomes: MD, SMD (Hedges' g) and ratio of means" description="Default values: a depression score (lower is better).">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,340px)_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
         <div className="grid grid-cols-3 gap-2">
           <NumberField label="Mean (T)" value={m1} onChange={setM1} step={0.5} />
           <NumberField label="SD (T)" value={s1} onChange={setS1} step={0.5} min={0} />

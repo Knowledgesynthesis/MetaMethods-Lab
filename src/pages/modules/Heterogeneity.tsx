@@ -147,6 +147,7 @@ function EstimatorLab() {
 // ------------------------------------------------------------------ Lab 3: coverage simulation
 interface SimResult {
   method: string
+  short: string
   coverage: number
   width: number
 }
@@ -154,10 +155,10 @@ interface SimResult {
 function simulate(k: number, tau: number, nSim: number, seed: number): SimResult[] {
   const r = rng(seed)
   const methods = [
-    { method: 'DL + Wald (old RevMan default)', opts: { tau2Method: 'DL' as const, ciMethod: 'wald' as const } },
-    { method: 'REML + Wald', opts: { tau2Method: 'REML' as const, ciMethod: 'wald' as const } },
-    { method: 'REML + HKSJ', opts: { tau2Method: 'REML' as const, ciMethod: 'hksj' as const } },
-    { method: 'Cochrane rule (REML, HKSJ if τ̂² > 0)', opts: null },
+    { method: 'DL + Wald (old RevMan default)', short: 'DL + Wald', opts: { tau2Method: 'DL' as const, ciMethod: 'wald' as const } },
+    { method: 'REML + Wald', short: 'REML + Wald', opts: { tau2Method: 'REML' as const, ciMethod: 'wald' as const } },
+    { method: 'REML + HKSJ', short: 'REML + HKSJ', opts: { tau2Method: 'REML' as const, ciMethod: 'hksj' as const } },
+    { method: 'Cochrane rule (REML; HKSJ if τ̂² > 0 and k > 2)', short: 'Cochrane rule', opts: null },
   ]
   const cover = methods.map(() => 0)
   const widths: number[][] = methods.map(() => [])
@@ -173,7 +174,7 @@ function simulate(k: number, tau: number, nSim: number, seed: number): SimResult
   }
   return methods.map((m, j) => {
     const w = widths[j].sort((a, b) => a - b)
-    return { method: m.method, coverage: (100 * cover[j]) / nSim, width: w[Math.floor(w.length / 2)] }
+    return { method: m.method, short: m.short, coverage: (100 * cover[j]) / nSim, width: w[Math.floor(w.length / 2)] }
   })
 }
 
@@ -188,7 +189,7 @@ function CoverageLab() {
     setSeed(seed + 1)
   }
   const h = 200
-  const m = { l: 210, r: 60, t: 10, b: 36 }
+  const m = { l: 112, r: 56, t: 10, b: 36 }
   const x = linear([50, 100], [m.l, Math.max(m.l + 50, width - m.r)])
   return (
     <Lab
@@ -213,8 +214,8 @@ function CoverageLab() {
                 const good = r.coverage >= 93
                 return (
                   <g key={r.method}>
-                    <text x={m.l - 8} y={y + 12} textAnchor="end" fontSize={12} fill={C.fg}>
-                      {r.method}
+                    <text x={m.l - 8} y={y + 16} textAnchor="end" fontSize={12} fill={C.fg}>
+                      {r.short}
                     </text>
                     <rect x={x(50)} y={y} width={Math.max(0, x(Math.max(50, r.coverage)) - x(50))} height={24} rx={3} fill={good ? C.green : C.vermillion} opacity={0.8} />
                     <text x={x(Math.max(50, r.coverage)) + 6} y={y + 16} fontSize={12} fill={C.fg} className="num">

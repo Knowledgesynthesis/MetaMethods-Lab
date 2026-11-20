@@ -181,7 +181,7 @@ export function DataTable({ head, rows, className }: { head: ReactNode[]; rows: 
   return (
     <div className={cn('overflow-x-auto rounded-lg border', className)}>
       <table className="num w-full text-sm">
-        <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+        <thead className="bg-muted/50 text-xs text-muted-foreground">
           <tr>
             {head.map((h, i) => (
               <th key={i} className={cn('px-3 py-2 font-medium', i === 0 ? 'text-left' : 'text-right')}>

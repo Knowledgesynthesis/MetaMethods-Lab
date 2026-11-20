@@ -39,7 +39,7 @@ function ExplorerLab() {
         <Toggle checked={showPred} onChange={setShowPred} label="Prediction region" />
         <Toggle checked={showSroc} onChange={setShowSroc} label="SROC curve" />
       </div>
-      <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,440px)_1fr]">
+      <div className="mt-4 grid gap-6 lg:grid-cols-[440px_minmax(0,1fr)]">
         <RocPlot
           points={DTA_STUDIES.map((s, i) => ({ fpr: fit.points[i].fpr, sens: fit.points[i].sens, size: s.tp + s.fn + s.fp + s.tn, label: s.study }))}
           summary={{ fpr: fit.fpr.est, sens: fit.sens.est }}
@@ -118,7 +118,7 @@ function ThresholdLab() {
         <SliderField label="Threshold variation between studies (SD)" value={thrSD} onChange={setThrSD} min={0} max={1.2} step={0.05} format={(v) => fmt(v)} />
         <SliderField label="Variation in true accuracy (SD)" value={accSD} onChange={setAccSD} min={0} max={1} step={0.05} format={(v) => fmt(v)} />
       </div>
-      <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,420px)_1fr]">
+      <div className="mt-4 grid gap-6 lg:grid-cols-[420px_minmax(0,1fr)]">
         <RocPlot
           points={pts.map((p) => ({ fpr: p.fpr, sens: p.sens }))}
           summary={fit ? { fpr: fit.fpr.est, sens: fit.sens.est } : null}
