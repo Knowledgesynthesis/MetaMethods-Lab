@@ -101,7 +101,8 @@ export function nelderMead(
     const spread = Math.abs(values[n] - values[0])
     let size = 0
     for (let i = 1; i <= n; i++) for (let j = 0; j < n; j++) size = Math.max(size, Math.abs(simplex[i][j] - simplex[0][j]))
-    if (spread < tol && size < 1e-7) {
+    // converge on a tight simplex, or on a flat objective (e.g. a parameter drifting along a boundary)
+    if ((spread < tol && size < 1e-7) || spread < 1e-15 * (1 + Math.abs(values[0]))) {
       converged = true
       break
     }

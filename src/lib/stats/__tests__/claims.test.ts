@@ -11,7 +11,9 @@ import { poolGLMM, poolTransformed } from '../proportions'
 import { metaRegression } from '../metaRegression'
 import { rng } from '../random'
 import { eggerTest, petersTest, trimAndFill } from '../pubBias'
-import { qnorm } from '../distributions'
+import { bivariateDTA } from '../dta'
+import { networkMetaAnalysis } from '../nma'
+import { pnorm, qnorm } from '../distributions'
 
 describe('Module 2 claims', () => {
   it('moving the largest BP trial shifts the common-effect estimate more than the random-effects mean', () => {
@@ -162,6 +164,55 @@ describe('Module 7 claims', () => {
     const med = pubOR.sort((a, b) => a - b)[50]
     expect(med).toBeLessThan(0.87)
     expect(flagged).toBeLessThan(30)
+  })
+})
+
+describe('Module 8 claims', () => {
+  it('the DTA dataset shows a strong threshold effect', () => {
+    const f = bivariateDTA(DTA_STUDIES)
+    expect(f.rho).toBeGreaterThan(0.8)
+  })
+  it('pure threshold variation gives ρ near +1; pure accuracy variation gives ρ near 0', () => {
+    const med = (thr: number, acc: number) => {
+      const rhos: number[] = []
+      for (let seed = 5; seed < 25; seed++) {
+        const r = rng(seed)
+        const st = Array.from({ length: 16 }, () => {
+          const c = r.normal(1, thr)
+          const d = r.normal(2, acc)
+          const nd = r.int(40, 150)
+          const nn = r.int(100, 400)
+          const tp = r.binomial(nd, 1 - pnorm(c - d))
+          const fp = r.binomial(nn, 1 - pnorm(c))
+          return { tp, fn: nd - tp, fp, tn: nn - fp }
+        })
+        rhos.push(bivariateDTA(st).rho)
+      }
+      return rhos.sort((a, b) => a - b)[10]
+    }
+    expect(med(1.2, 0)).toBeGreaterThan(0.9)
+    expect(Math.abs(med(0, 0.6))).toBeLessThan(0.4)
+  })
+})
+
+describe('Module 9 claims', () => {
+  const base = NMA_TRIALS.map((s) => {
+    const e = binaryEffect({ ai: s.e2, n1: s.n2, ci: s.e1, n2: s.n1 }, 'OR')
+    return { id: s.study, t1: s.t1, t2: s.t2, yi: e.yi, vi: e.vi }
+  })
+  it('the course network is consistent at baseline', () => {
+    const r = networkMetaAnalysis(base, { reference: 'P', smallerIsBetter: false })
+    expect(r.QincP).toBeGreaterThan(0.2)
+    for (const s of r.split) if (s.pval !== null) expect(s.pval).toBeGreaterThan(0.1)
+    expect(r.pscores.D).toBeGreaterThan(0.8)
+  })
+  it('injecting +0.8 into B–C creates detectable inconsistency and shifts D vs placebo', () => {
+    const r0 = networkMetaAnalysis(base, { reference: 'P', smallerIsBetter: false })
+    const st = base.map((s) => (s.t1 === 'B' && s.t2 === 'C' ? { ...s, yi: s.yi + 0.8 } : s))
+    const r = networkMetaAnalysis(st, { reference: 'P', smallerIsBetter: false })
+    expect(r.QincP).toBeLessThan(0.01)
+    expect(r.split.find((s) => s.t1 === 'B' && s.t2 === 'C')!.pval!).toBeLessThan(0.01)
+    expect(Math.abs(r.vsRef.D.est - r0.vsRef.D.est)).toBeGreaterThan(0.1)
   })
 })
 

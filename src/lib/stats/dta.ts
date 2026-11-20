@@ -66,9 +66,10 @@ export interface BivariateResult {
 }
 
 function psiFromParams(p: number[]): Matrix {
-  const l11 = Math.exp(p[0])
-  const l21 = p[1]
-  const l22 = Math.exp(p[2])
+  // bounded Cholesky factors keep the optimiser finite when τ → 0 or |ρ| → 1
+  const l11 = Math.exp(Math.max(-7, Math.min(3, p[0])))
+  const l21 = Math.max(-20, Math.min(20, p[1]))
+  const l22 = Math.exp(Math.max(-7, Math.min(3, p[2])))
   return [
     [l11 * l11, l11 * l21],
     [l11 * l21, l21 * l21 + l22 * l22],
@@ -135,12 +136,12 @@ export function bivariateDTA(studies: DTAStudy[], level = 0.95): BivariateResult
     [Math.log(s1 * 0.3), -0.5 * s2 * 0.3, Math.log(s2 * 0.3)],
     [Math.log(s1), 0.5 * s2, Math.log(s2)],
   ]
-  let best = nelderMead(obj, starts[0], { tol: 1e-13, maxIter: 8000 })
+  let best = nelderMead(obj, starts[0], { tol: 1e-11, maxIter: 3000 })
   for (const s of starts.slice(1)) {
-    const r = nelderMead(obj, s, { tol: 1e-13, maxIter: 8000 })
+    const r = nelderMead(obj, s, { tol: 1e-11, maxIter: 3000 })
     if (r.fx < best.fx) best = r
   }
-  best = nelderMead(obj, best.x, { tol: 1e-14, maxIter: 8000, step: 0.05 })
+  best = nelderMead(obj, best.x, { tol: 1e-13, maxIter: 3000, step: 0.05 })
   const Psi = psiFromParams(best.x)
   const { mu, V } = remlObjective(points, Psi)
   const z = qnorm(1 - (1 - level) / 2)
