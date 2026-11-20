@@ -1,172 +1,143 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Switch } from '@/components/ui/switch'
-import { useAppStore } from '@/stores/appStore'
-import { Moon, Sun, Type, Eye } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Download, Upload } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { MODULES } from '@/content/curriculum'
+import { useAppStore, type FontSize, type Theme } from '@/stores/appStore'
+import { Segmented } from '@/components/ui/controls'
+import { cn } from '@/lib/utils'
 
 export default function Settings() {
-  const { settings, updateSettings, progress } = useAppStore()
+  const { theme, setTheme, fontSize, setFontSize, completed, quiz, answered, resetProgress } = useAppStore()
+  const [confirm, setConfirm] = useState(false)
+  const [msg, setMsg] = useState('')
+  const file = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    document.title = 'Settings & progress · MetaMethods Lab'
+  }, [])
 
-  const handleDarkModeToggle = (checked: boolean) => {
-    updateSettings({ darkMode: checked })
-    if (checked) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
+  const exportProgress = () => {
+    const blob = new Blob([JSON.stringify({ version: 2, completed, quiz, answered }, null, 2)], { type: 'application/json' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = 'metamethods-progress.json'
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }
+  const importProgress = async (f: File) => {
+    try {
+      const data = JSON.parse(await f.text())
+      if (data.version !== 2) throw new Error('version')
+      useAppStore.setState({ completed: data.completed ?? {}, quiz: data.quiz ?? {}, answered: data.answered ?? {} })
+      setMsg('Progress imported.')
+    } catch {
+      setMsg('That file is not a MetaMethods progress export.')
     }
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-2">
-          Customize your learning experience
-        </p>
-      </div>
+    <div className="mx-auto max-w-3xl space-y-8">
+      <header>
+        <h1 className="text-3xl font-bold tracking-tight">Settings & progress</h1>
+      </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Appearance</CardTitle>
-          <CardDescription>
-            Customize how the app looks and feels
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5 flex items-center gap-3">
-              {settings.darkMode ? (
-                <Moon className="h-5 w-5" />
-              ) : (
-                <Sun className="h-5 w-5" />
-              )}
-              <div>
-                <label className="text-sm font-medium">Dark Mode</label>
-                <p className="text-sm text-muted-foreground">
-                  Use dark theme throughout the app
-                </p>
-              </div>
-            </div>
-            <Switch
-              checked={settings.darkMode}
-              onCheckedChange={handleDarkModeToggle}
-            />
-          </div>
+      <section className="space-y-4 rounded-xl border bg-card p-5">
+        <h2 className="text-lg font-semibold">Display</h2>
+        <Segmented<Theme>
+          label="Theme"
+          value={theme}
+          onChange={setTheme}
+          options={[
+            { value: 'system', label: 'System' },
+            { value: 'light', label: 'Light' },
+            { value: 'dark', label: 'Dark' },
+          ]}
+        />
+        <Segmented<FontSize>
+          label="Text size"
+          value={fontSize}
+          onChange={setFontSize}
+          options={[
+            { value: 'sm', label: 'Small' },
+            { value: 'md', label: 'Medium' },
+            { value: 'lg', label: 'Large' },
+          ]}
+        />
+        <p className="text-xs text-muted-foreground">Charts use the Okabe–Ito palette, which remains distinguishable with common forms of colour-vision deficiency.</p>
+      </section>
 
-          <div className="flex items-center justify-between opacity-50">
-            <div className="space-y-0.5 flex items-center gap-3">
-              <Type className="h-5 w-5" />
-              <div>
-                <label className="text-sm font-medium">Font Size</label>
-                <p className="text-sm text-muted-foreground">
-                  Current: {settings.fontSize}
-                </p>
-              </div>
-            </div>
-            <Switch checked={false} disabled />
-          </div>
-
-          <div className="flex items-center justify-between opacity-50">
-            <div className="space-y-0.5 flex items-center gap-3">
-              <Eye className="h-5 w-5" />
-              <div>
-                <label className="text-sm font-medium">Color Blind Mode</label>
-                <p className="text-sm text-muted-foreground">
-                  Enhanced color contrast
-                </p>
-              </div>
-            </div>
-            <Switch checked={settings.colorBlindMode} disabled />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Progress</CardTitle>
-          <CardDescription>
-            Track your learning journey
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Modules Completed</p>
-              <p className="text-3xl font-bold">{progress.completedModules.length}</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Assessments Taken</p>
-              <p className="text-3xl font-bold">
-                {Object.keys(progress.assessmentScores).length}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Bookmarks</p>
-              <p className="text-3xl font-bold">{progress.bookmarks.length}</p>
-            </div>
-          </div>
-
-          {Object.keys(progress.assessmentScores).length > 0 && (
-            <div className="pt-4 border-t">
-              <h3 className="font-semibold mb-3">Assessment Scores</h3>
-              <div className="space-y-2">
-                {Object.entries(progress.assessmentScores).map(([moduleId, score]) => (
-                  <div key={moduleId} className="flex justify-between items-center">
-                    <span className="text-sm">{moduleId}</span>
-                    <span className="text-sm font-mono">{score}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+      <section className="space-y-4 rounded-xl border bg-card p-5">
+        <h2 className="text-lg font-semibold">Progress</h2>
+        <ul className="grid gap-1.5 text-sm">
+          {MODULES.map((m) => {
+            const q = quiz[`module:${m.id}`]
+            return (
+              <li key={m.id} className="flex items-center justify-between gap-3">
+                <Link to={m.path} className="hover:text-primary">
+                  <span className="mr-2 font-mono text-xs text-primary">{m.n}</span>
+                  {m.title}
+                </Link>
+                <span className="flex items-center gap-3 text-xs">
+                  <span className={cn(q ? (q.best >= 80 ? 'text-ok' : 'text-warn') : 'text-muted-foreground')}>{q ? `quiz ${Math.round(q.best)}%` : 'no quiz'}</span>
+                  <span className={completed[m.id] ? 'text-ok' : 'text-muted-foreground'}>{completed[m.id] ? 'completed' : 'open'}</span>
+                </span>
+              </li>
+            )
+          })}
+        </ul>
+        <div className="flex flex-wrap gap-2 pt-2">
+          <button type="button" onClick={exportProgress} className="inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm hover:bg-accent">
+            <Download className="h-4 w-4" /> Export progress
+          </button>
+          <button type="button" onClick={() => file.current?.click()} className="inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm hover:bg-accent">
+            <Upload className="h-4 w-4" /> Import progress
+          </button>
+          <input
+            ref={file}
+            type="file"
+            accept="application/json"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void importProgress(f)
+              e.target.value = ''
+            }}
+          />
+          {confirm ? (
+            <span className="inline-flex items-center gap-2 text-sm">
+              Delete all progress?
+              <button
+                type="button"
+                onClick={() => {
+                  resetProgress()
+                  setConfirm(false)
+                  setMsg('Progress reset.')
+                }}
+                className="rounded-md bg-bad px-3 py-1.5 text-xs font-medium text-white"
+              >
+                Yes, reset
+              </button>
+              <button type="button" onClick={() => setConfirm(false)} className="text-xs text-muted-foreground hover:text-foreground">
+                Cancel
+              </button>
+            </span>
+          ) : (
+            <button type="button" onClick={() => setConfirm(true)} className="inline-flex h-9 items-center rounded-md border px-3 text-sm text-bad hover:bg-bad/10">
+              Reset progress
+            </button>
           )}
-        </CardContent>
-      </Card>
+        </div>
+        {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
+        <p className="text-xs text-muted-foreground">Progress is stored only in this browser. Export it to move to another device.</p>
+      </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>About MetaMethods Lab</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2 text-sm">
-            <p>
-              <strong>Version:</strong> 1.0.0
-            </p>
-            <p>
-              <strong>Purpose:</strong> Educational platform for learning meta-analytic methods
-            </p>
-            <p className="text-muted-foreground">
-              This application uses synthetic data only and is designed for educational purposes.
-              For real meta-analyses, please use validated statistical software such as R, Stata,
-              or RevMan.
-            </p>
-          </div>
-
-          <div className="pt-4 border-t space-y-2">
-            <h3 className="font-semibold">Data Privacy</h3>
-            <p className="text-sm text-muted-foreground">
-              All your progress and settings are stored locally in your browser. No data is sent
-              to external servers. Clearing your browser data will reset your progress.
-            </p>
-          </div>
-
-          <div className="pt-4 border-t space-y-2">
-            <h3 className="font-semibold">Offline Capability</h3>
-            <p className="text-sm text-muted-foreground">
-              This app can work offline once fully loaded. Your progress is saved locally and
-              will sync when you return online.
-            </p>
-          </div>
-
-          <div className="pt-4 border-t space-y-2">
-            <h3 className="font-semibold">References</h3>
-            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-              <li>Cochrane Handbook for Systematic Reviews of Interventions</li>
-              <li>Borenstein M, et al. Introduction to Meta-Analysis (2009)</li>
-              <li>Deeks JJ, et al. Cochrane Handbook Chapter 10: DTA Reviews</li>
-              <li>Dias S, et al. Network Meta-Analysis for Decision Making (2018)</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
+      <section className="space-y-2 rounded-xl border bg-card p-5 text-sm">
+        <h2 className="text-lg font-semibold">About</h2>
+        <p>
+          MetaMethods Lab {__APP_VERSION__}. The statistical engine is verified by automated tests against R packages metafor, meta, netmeta, mada and bayesmeta
+          on simulated and published datasets. Teaching datasets are synthetic.
+        </p>
+        <p className="text-muted-foreground">Install it from your browser menu (“Install app” / “Add to Home Screen”) to use it offline.</p>
+      </section>
     </div>
   )
 }

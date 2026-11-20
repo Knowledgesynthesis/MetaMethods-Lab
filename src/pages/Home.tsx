@@ -1,161 +1,146 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { BookOpen, BarChart3, Network, TestTube, ArrowRight } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Clock, FlaskConical, GraduationCap, ShieldCheck } from 'lucide-react'
+import { MODULES } from '@/content/curriculum'
+import { useAppStore } from '@/stores/appStore'
+import { cn } from '@/lib/utils'
 
-const modules = [
-  {
-    id: 'effect-size-basics',
-    title: 'Effect Size Fundamentals',
-    description: 'Learn about different effect measures: MD, SMD, RR, OR, HR, and when to use each.',
-    icon: BookOpen,
-    path: '/effect-size-basics',
-    color: 'text-blue-500',
-  },
-  {
-    id: 'pairwise-meta-analysis',
-    title: 'Forest Plot Playground',
-    description: 'Interactive forest plots with fixed and random-effects models. Explore heterogeneity metrics.',
-    icon: BarChart3,
-    path: '/pairwise-meta-analysis',
-    color: 'text-green-500',
-  },
-  {
-    id: 'proportions-lab',
-    title: 'Proportions & Transformations Lab',
-    description: 'Compare logit, Freeman-Tukey, and other transformations for single-arm meta-analysis.',
-    icon: TestTube,
-    path: '/proportions-lab',
-    color: 'text-purple-500',
-  },
-  {
-    id: 'meta-regression',
-    title: 'Meta-regression Visualizer',
-    description: 'Explore how study-level covariates affect pooled estimates and heterogeneity.',
-    icon: BarChart3,
-    path: '/meta-regression',
-    color: 'text-orange-500',
-  },
-  {
-    id: 'dta',
-    title: 'DTA Meta-analysis',
-    description: 'Diagnostic test accuracy: sensitivity, specificity, and SROC curves.',
-    icon: BarChart3,
-    path: '/dta-meta-analysis',
-    color: 'text-pink-500',
-  },
-  {
-    id: 'network-meta-analysis',
-    title: 'Network Meta-analysis',
-    description: 'Build treatment networks, explore direct and indirect comparisons.',
-    icon: Network,
-    path: '/network-meta-analysis',
-    color: 'text-indigo-500',
-  },
+const GROUPS = ['Foundations', 'Special data', 'Advanced', 'Practice'] as const
+
+const LOOP = [
+  { t: 'Predict', d: 'Commit to an answer before you see the data change. Wrong predictions are where learning happens.' },
+  { t: 'Experiment', d: 'Change the data, the model or the estimator in a live lab and watch every number update.' },
+  { t: 'Explain', d: 'Each result is tied to the formula, the current Cochrane guidance and the primary literature.' },
+  { t: 'Retrieve', d: 'Quick checks inside the text and a quiz per module, with explanations for every option.' },
 ]
 
 export default function Home() {
+  const completed = useAppStore((s) => s.completed)
+  const quiz = useAppStore((s) => s.quiz)
+  const next = MODULES.find((m) => !completed[m.id]) ?? MODULES[0]
+  const started = Object.keys(completed).length > 0
+  const totalMin = MODULES.reduce((s, m) => s + m.minutes, 0)
+
+  useEffect(() => {
+    document.title = 'MetaMethods Lab — meta-analysis, learned by doing'
+  }, [])
+
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight">
-          Welcome to MetaMethods Lab
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-3xl">
-          An interactive platform for learning advanced meta-analytic methods. From basic effect sizes to
-          network meta-analysis, master the statistical foundations of evidence synthesis.
-        </p>
-        <div className="flex flex-wrap gap-4 pt-4">
-          <Button asChild size="lg">
-            <Link to="/effect-size-basics">
-              Start Learning <ArrowRight className="ml-2 h-4 w-4" />
+    <div className="mx-auto max-w-[1180px] space-y-14">
+      <section className="grid gap-8 pt-2 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wider text-primary">An interactive course in meta-analysis</p>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">Understand every number in a meta-analysis — by producing it yourself.</h1>
+          <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
+            Eleven modules from effect sizes to network and Bayesian meta-analysis. Every lab runs a real statistical engine that reproduces R’s
+            metafor, meta, netmeta, mada and bayesmeta, and follows the Cochrane Handbook v6.5.1 (2026).
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link to={next.path} className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-6 font-medium text-primary-foreground hover:bg-primary/90">
+              {started ? `Continue: ${next.title}` : 'Start with Module 1'} <ArrowRight className="h-4 w-4" />
             </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link to="/assessment">
-              Test Your Knowledge
+            <Link to="/learn/workflow" className="inline-flex h-11 items-center rounded-md border px-5 font-medium hover:bg-accent">
+              I have a dataset — which method?
             </Link>
-          </Button>
+          </div>
         </div>
-      </div>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { k: '11', v: 'modules', icon: GraduationCap },
+            { k: '26', v: 'interactive labs', icon: FlaskConical },
+            { k: '155', v: 'test cases matched against R', icon: ShieldCheck },
+            { k: `${Math.round(totalMin / 60)} h`, v: 'total study time', icon: Clock },
+          ].map(({ k, v, icon: Icon }) => (
+            <div key={v} className="rounded-xl border bg-card p-4">
+              <Icon className="h-5 w-5 text-primary" aria-hidden />
+              <div className="mt-2 text-2xl font-bold">{k}</div>
+              <div className="text-sm text-muted-foreground">{v}</div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {/* Key Features */}
-      <div className="grid gap-4 pt-8">
-        <h2 className="text-2xl font-bold">Interactive Learning Modules</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {modules.map((module) => {
-            const Icon = module.icon
-            return (
-              <Link key={module.id} to={module.path}>
-                <Card className="h-full transition-all hover:shadow-lg hover:border-primary/50">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className={cn('rounded-lg bg-muted p-2', module.color)}>
-                        <Icon className="h-6 w-6" />
-                      </div>
-                      <CardTitle className="text-lg">{module.title}</CardTitle>
+      <section aria-labelledby="loop">
+        <h2 id="loop" className="text-xl font-semibold">How every module works</h2>
+        <ol className="mt-4 grid gap-3 md:grid-cols-4">
+          {LOOP.map((s, i) => (
+            <li key={s.t} className="rounded-xl border bg-card p-4">
+              <div className="font-mono text-xs text-primary">0{i + 1}</div>
+              <div className="mt-1 font-semibold">{s.t}</div>
+              <p className="mt-1 text-sm text-muted-foreground">{s.d}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section aria-labelledby="map" className="space-y-8">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 id="map" className="text-xl font-semibold">Course map</h2>
+          <p className="text-sm text-muted-foreground">Modules 1–3 are the foundation; after that, follow your needs.</p>
+        </div>
+        {GROUPS.map((g) => (
+          <div key={g}>
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{g}</h3>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {MODULES.filter((m) => m.group === g).map((m) => {
+                const done = !!completed[m.id]
+                const q = quiz[`module:${m.id}`]
+                return (
+                  <Link
+                    key={m.id}
+                    to={m.path}
+                    className={cn(
+                      'group flex flex-col rounded-xl border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-md',
+                      done && 'border-ok/40',
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-semibold text-primary">Module {m.n}</span>
+                      {done ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-ok">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> done
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">~{m.minutes} min</span>
+                      )}
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription>{module.description}</CardDescription>
-                  </CardContent>
-                </Card>
-              </Link>
-            )
-          })}
-        </div>
-      </div>
+                    <div className="mt-1.5 text-lg font-semibold">{m.title}</div>
+                    <p className="mt-1 flex-1 text-sm text-muted-foreground">{m.blurb}</p>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {m.labs.map((l) => (
+                        <span key={l} className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                          {l}
+                        </span>
+                      ))}
+                    </div>
+                    {q && <div className="mt-2 text-xs text-muted-foreground">Quiz best: {Math.round(q.best)}%</div>}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </section>
 
-      {/* About Section */}
-      <div className="space-y-4 pt-8">
-        <h2 className="text-2xl font-bold">About This Platform</h2>
-        <Card>
-          <CardHeader>
-            <CardTitle>Evidence-Based Learning</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              MetaMethods Lab provides a hands-on approach to learning meta-analytic methods. All statistical
-              formulas and concepts are aligned with established standards from the Cochrane Handbook and
-              leading meta-analysis texts.
-            </p>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <h3 className="font-semibold mb-2">Key Features:</h3>
-                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                  <li>Interactive visualizations</li>
-                  <li>Synthetic study-level data</li>
-                  <li>Real-time calculations</li>
-                  <li>Mobile-optimized interface</li>
-                  <li>Offline capability</li>
-                  <li>Dark mode support</li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Who Is This For?</h3>
-                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                  <li>Residents & Fellows</li>
-                  <li>Clinician-Scientists</li>
-                  <li>Biostatistics Students</li>
-                  <li>Systematic Reviewers</li>
-                  <li>Evidence Synthesis Methodologists</li>
-                </ul>
-              </div>
-            </div>
-            <div className="pt-4 border-t">
-              <p className="text-sm text-muted-foreground">
-                <strong>Important:</strong> This is an educational tool only. All data is synthetic.
-                For real meta-analyses, use validated statistical software like R, Stata, or RevMan.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <section className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-xl border bg-card p-5">
+          <h3 className="font-semibold">Current, not historical</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            REML instead of DerSimonian–Laird, Hartung–Knapp–Sidik–Jonkman intervals, prediction intervals, GLMMs for proportions, ROB-ME for missing
+            evidence, GRADE’s minimally contextualised NMA conclusions.
+          </p>
+        </div>
+        <div className="rounded-xl border bg-card p-5">
+          <h3 className="font-semibold">Verifiable</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            The engine is checked against R on hundreds of simulated datasets, and labs export the R code that reproduces their results.
+          </p>
+        </div>
+        <div className="rounded-xl border bg-card p-5">
+          <h3 className="font-semibold">Works offline</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Install it as an app; progress is stored on your device only.</p>
+        </div>
+      </section>
     </div>
   )
-}
-
-function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
 }
