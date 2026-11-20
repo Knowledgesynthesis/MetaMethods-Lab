@@ -1,84 +1,68 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { AppSettings, UserProgress } from '@/types'
+import type { ModuleId } from '@/content/curriculum'
+
+export type Theme = 'dark' | 'light' | 'system'
+export type FontSize = 'sm' | 'md' | 'lg'
+
+export interface QuizRecord {
+  best: number
+  last: number
+  attempts: number
+}
 
 interface AppState {
-  // Settings
-  settings: AppSettings
-  updateSettings: (settings: Partial<AppSettings>) => void
-
-  // User progress
-  progress: UserProgress
-  markModuleComplete: (moduleId: string) => void
-  saveAssessmentScore: (moduleId: string, score: number) => void
-  toggleBookmark: (itemId: string) => void
-
-  // UI state
+  theme: Theme
+  fontSize: FontSize
+  completed: Partial<Record<ModuleId, string>>
+  quiz: Record<string, QuizRecord>
+  /** last answer correctness per question id — drives "review missed questions" */
+  answered: Record<string, boolean>
   sidebarOpen: boolean
-  toggleSidebar: () => void
-}
-
-const defaultSettings: AppSettings = {
-  darkMode: true,  // Default to dark mode as per requirements
-  fontSize: 'medium',
-  colorBlindMode: false,
-  offlineMode: false,
-}
-
-const defaultProgress: UserProgress = {
-  userId: 'default-user',
-  completedModules: [],
-  assessmentScores: {},
-  bookmarks: [],
-  lastAccessed: new Date(),
+  setTheme: (t: Theme) => void
+  setFontSize: (f: FontSize) => void
+  toggleComplete: (id: ModuleId) => void
+  recordQuiz: (key: string, pct: number) => void
+  recordAnswer: (qid: string, correct: boolean) => void
+  setSidebar: (open: boolean) => void
+  resetProgress: () => void
 }
 
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      settings: defaultSettings,
-      updateSettings: (newSettings) =>
-        set((state) => ({
-          settings: { ...state.settings, ...newSettings },
-        })),
-
-      progress: defaultProgress,
-      markModuleComplete: (moduleId) =>
-        set((state) => ({
-          progress: {
-            ...state.progress,
-            completedModules: state.progress.completedModules.includes(moduleId)
-              ? state.progress.completedModules
-              : [...state.progress.completedModules, moduleId],
-            lastAccessed: new Date(),
-          },
-        })),
-      saveAssessmentScore: (moduleId, score) =>
-        set((state) => ({
-          progress: {
-            ...state.progress,
-            assessmentScores: {
-              ...state.progress.assessmentScores,
-              [moduleId]: score,
-            },
-            lastAccessed: new Date(),
-          },
-        })),
-      toggleBookmark: (itemId) =>
-        set((state) => ({
-          progress: {
-            ...state.progress,
-            bookmarks: state.progress.bookmarks.includes(itemId)
-              ? state.progress.bookmarks.filter((id) => id !== itemId)
-              : [...state.progress.bookmarks, itemId],
-          },
-        })),
-
+      theme: 'system',
+      fontSize: 'md',
+      completed: {},
+      quiz: {},
+      answered: {},
       sidebarOpen: false,
-      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+      setTheme: (theme) => set({ theme }),
+      setFontSize: (fontSize) => set({ fontSize }),
+      toggleComplete: (id) =>
+        set((s) => {
+          const completed = { ...s.completed }
+          if (completed[id]) delete completed[id]
+          else completed[id] = new Date().toISOString()
+          return { completed }
+        }),
+      recordQuiz: (key, pct) =>
+        set((s) => {
+          const prev = s.quiz[key]
+          return {
+            quiz: {
+              ...s.quiz,
+              [key]: { best: Math.max(prev?.best ?? 0, pct), last: pct, attempts: (prev?.attempts ?? 0) + 1 },
+            },
+          }
+        }),
+      recordAnswer: (qid, correct) => set((s) => ({ answered: { ...s.answered, [qid]: correct } })),
+      setSidebar: (sidebarOpen) => set({ sidebarOpen }),
+      resetProgress: () => set({ completed: {}, quiz: {}, answered: {} }),
     }),
     {
-      name: 'metamethods-storage',
-    }
-  )
+      name: 'metamethods-v2',
+      partialize: (s) => ({ theme: s.theme, fontSize: s.fontSize, completed: s.completed, quiz: s.quiz, answered: s.answered }),
+    },
+  ),
 )

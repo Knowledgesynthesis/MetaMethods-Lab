@@ -4,56 +4,156 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 210 33% 99%;
+    --foreground: 222 40% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --card-foreground: 222 40% 11%;
+    --muted: 214 30% 95%;
+    --muted-foreground: 217 15% 38%;
+    --accent: 214 40% 93%;
+    --accent-foreground: 222 40% 15%;
+    --primary: 221 70% 44%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 30% 94%;
+    --secondary-foreground: 222 40% 15%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 25% 87%;
+    --input: 214 25% 82%;
+    --ring: 221 70% 44%;
+    --radius: 0.6rem;
+
+    /* Okabe–Ito colour-blind-safe palette for charts */
+    --c-blue: 202 100% 35%;
+    --c-orange: 41 100% 40%;
+    --c-sky: 202 77% 50%;
+    --c-green: 164 100% 28%;
+    --c-vermillion: 24 100% 42%;
+    --c-purple: 326 43% 52%;
+    --c-grid: 214 20% 88%;
+    --c-ink: 222 30% 25%;
+
+    --ok: 164 100% 26%;
+    --warn: 35 100% 35%;
+    --bad: 0 72% 45%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-  }
-}
+    --background: 222 47% 7%;
+    --foreground: 213 31% 92%;
+    --card: 222 40% 10%;
+    --card-foreground: 213 31% 92%;
+    --muted: 222 30% 15%;
+    --muted-foreground: 215 18% 68%;
+    --accent: 222 30% 18%;
+    --accent-foreground: 213 31% 94%;
+    --primary: 213 94% 68%;
+    --primary-foreground: 222 47% 9%;
+    --secondary: 222 30% 16%;
+    --secondary-foreground: 213 31% 92%;
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 222 47% 9%;
+    --border: 222 25% 20%;
+    --input: 222 25% 26%;
+    --ring: 213 94% 68%;
 
-@layer base {
+    --c-blue: 202 75% 60%;
+    --c-orange: 41 100% 57%;
+    --c-sky: 202 77% 70%;
+    --c-green: 164 70% 50%;
+    --c-vermillion: 24 100% 62%;
+    --c-purple: 326 55% 70%;
+    --c-grid: 222 20% 22%;
+    --c-ink: 213 25% 80%;
+
+    --ok: 164 70% 50%;
+    --warn: 41 100% 60%;
+    --bad: 0 80% 66%;
+  }
+
   * {
     @apply border-border;
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+  }
+  html[data-font='sm'] {
+    font-size: 15px;
+  }
+  html[data-font='md'] {
+    font-size: 16px;
+  }
+  html[data-font='lg'] {
+    font-size: 18px;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  .prose-lesson {
+    @apply text-[0.975rem] leading-7 text-foreground/90;
+  }
+  .prose-lesson p {
+    @apply my-3;
+  }
+  .prose-lesson h2 {
+    @apply mt-12 mb-3 scroll-mt-24 text-2xl font-semibold tracking-tight text-foreground;
+  }
+  .prose-lesson h3 {
+    @apply mt-8 mb-2 text-lg font-semibold text-foreground;
+  }
+  .prose-lesson ul {
+    @apply my-3 list-disc space-y-1.5 pl-5;
+  }
+  .prose-lesson ol {
+    @apply my-3 list-decimal space-y-1.5 pl-5;
+  }
+  .prose-lesson strong {
+    @apply font-semibold text-foreground;
+  }
+  .prose-lesson a {
+    @apply font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:decoration-primary;
+  }
+  .prose-lesson code {
+    @apply rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em];
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  .kbd {
+    @apply rounded border bg-muted px-1.5 py-0.5 font-mono text-xs;
+  }
+}
+
+/* KaTeX tweaks */
+.katex {
+  font-size: 1.05em;
+}
+.katex-display {
+  margin: 0.5rem 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 0;
+}
+
+/* Range inputs */
+input[type='range'] {
+  accent-color: hsl(var(--primary));
+}
+
+@media print {
+  aside,
+  header,
+  footer,
+  .no-print {
+    display: none !important;
   }
 }
