@@ -10,6 +10,7 @@ import { mantelHaenszel, peto } from '../binary'
 import { poolGLMM, poolTransformed } from '../proportions'
 import { metaRegression } from '../metaRegression'
 import { rng } from '../random'
+import { eggerTest, petersTest, trimAndFill } from '../pubBias'
 import { qnorm } from '../distributions'
 
 describe('Module 2 claims', () => {
@@ -129,6 +130,38 @@ describe('Module 6 claims', () => {
     }
     expect(hits[0] / n).toBeGreaterThan(0.14)
     expect(hits[1] / n).toBeLessThan(0.08)
+  })
+})
+
+describe('Module 7 claims', () => {
+  it('worked example shows strong small-study effects detected by Peters and filled on the harm side', () => {
+    const e = SMALL_STUDY_TRIALS.map((s) => binaryEffect(s, 'OR'))
+    const yi = e.map((x) => x.yi)
+    const vi = e.map((x) => x.vi)
+    const pe = petersTest(yi, SMALL_STUDY_TRIALS.map((s) => s.n1 + s.n2), SMALL_STUDY_TRIALS.map((s) => s.ai + s.ci))
+    expect(pe.pval).toBeLessThan(0.01)
+    const tf = trimAndFill(yi, vi)
+    expect(tf.k0).toBeGreaterThan(0)
+    expect(tf.side).toBe('right')
+    expect(eggerTest(yi, vi).coef).toBeLessThan(0)
+  })
+  it('selective publication exaggerates the published OR while Egger rarely detects it (default simulator settings)', () => {
+    const pubOR: number[] = []
+    let flagged = 0
+    for (let seed = 17; seed < 117; seed++) {
+      const r = rng(seed)
+      const st = Array.from({ length: 50 }, () => {
+        const nn = Math.round(Math.exp(Math.log(30) + r.uniform() * Math.log(1500 / 30)))
+        const v = 2 / (nn * 0.25 * 0.75)
+        const y = r.normal(r.normal(-0.1, 0.05), Math.sqrt(v))
+        return { y, v, pub: y / Math.sqrt(v) < -1.96 || r.uniform() < 0.2 }
+      }).filter((s) => s.pub)
+      pubOR.push(Math.exp(metaAnalysis(st.map((s) => s.y), st.map((s) => s.v)).estimate))
+      if (eggerTest(st.map((s) => s.y), st.map((s) => s.v)).pval < 0.1) flagged++
+    }
+    const med = pubOR.sort((a, b) => a - b)[50]
+    expect(med).toBeLessThan(0.87)
+    expect(flagged).toBeLessThan(30)
   })
 })
 
