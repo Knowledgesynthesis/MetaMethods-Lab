@@ -38,3 +38,6 @@ coverage
 
 # OS files
 Thumbs.db
+
+# PWA dev build
+dev-dist

@@ -28,7 +28,7 @@ function recommend(aim: Aim, outcome: Outcome, rarity: Rarity, k: K): { recs: Re
       { label: 'Sparse data', value: 'Exact-binomial bivariate GLMM; simplify (ρ = 0, univariate) transparently if it fails' },
       { label: 'Small-study effects', value: 'Deeks’ test only if ≥10 studies; low power' },
     )
-    code = 'library(mada)\nfit <- reitsma(dat)   # dat: TP, FN, FP, TN\nsummary(fit); plot(fit, predict = TRUE)'
+    code = '# Template: dat has columns TP, FN, FP, TN (one row per study)\nlibrary(mada)\nfit <- reitsma(dat)   # dat: TP, FN, FP, TN\nsummary(fit); plot(fit, predict = TRUE)'
     modules.push(['/learn/dta', 'Module 8'])
   } else if (aim === 'single') {
     recs.push(
@@ -36,7 +36,7 @@ function recommend(aim: Aim, outcome: Outcome, rarity: Rarity, k: K): { recs: Re
       { label: 'Sensitivity', value: 'Two-stage logit (REML + HKSJ); avoid Freeman–Tukey unless back-transformation is checked' },
       { label: 'Heterogeneity', value: 'Report τ (logit) and the prediction interval in %; I² will be high and uninformative' },
     )
-    code = 'library(meta)\nm <- metaprop(event, n, studlab = study, method = "GLMM", sm = "PLOGIT", prediction = TRUE)\nsummary(m); forest(m)'
+    code = '# Template: vectors event, n and study\nlibrary(meta)\nm <- metaprop(event, n, studlab = study, method = "GLMM", sm = "PLOGIT", prediction = TRUE)\nsummary(m); forest(m)'
     modules.push(['/learn/proportions', 'Module 5'])
   } else {
     const measure =
@@ -64,7 +64,7 @@ function recommend(aim: Aim, outcome: Outcome, rarity: Rarity, k: K): { recs: Re
         { label: 'Inconsistency', value: 'Node-splitting (local) and design-by-treatment (global); low power' },
         { label: 'Conclusions', value: 'GRADE minimally contextualised framework; CINeMA for confidence; no ranking without effects and certainty' },
       )
-      code = 'library(netmeta)\nnet <- netmeta(TE, seTE, treat1, treat2, studlab, sm = "OR", random = TRUE)\nnetleague(net); netsplit(net); decomp.design(net)'
+      code = '# Template: one row per comparison (TE, seTE, treat1, treat2, studlab)\nlibrary(netmeta)\nnet <- netmeta(TE, seTE, treat1, treat2, studlab, sm = "OR", random = TRUE)\nnetleague(net); netsplit(net); decomp.design(net)'
       modules.push(['/learn/nma', 'Module 9'])
     } else {
       recs.push({
@@ -80,8 +80,8 @@ function recommend(aim: Aim, outcome: Outcome, rarity: Rarity, k: K): { recs: Re
       recs.push({ label: 'Prediction interval', value: few ? 'Optional; very imprecise with < 5 studies' : 'Report it, with τ and I² (with CI)' })
       code =
         outcome === 'binary'
-          ? `library(metafor)\ndat <- escalc("RR", ai = ai, n1i = n1, ci = ci, n2i = n2, slab = study)\nres <- rma(yi, vi, data = dat, method = "REML", test = "knha")\npredict(res, transf = exp); confint(res)`
-          : `library(metafor)\ndat <- escalc("${outcome === 'cont-diff' ? 'SMD' : 'MD'}", m1i = m1, sd1i = sd1, n1i = n1, m2i = m2, sd2i = sd2, n2i = n2)\nres <- rma(yi, vi, data = dat, method = "REML", test = "knha")\npredict(res); confint(res)`
+          ? `# Template: vectors ai, n1, ci, n2 (events/totals per arm) and study\nlibrary(metafor)\ndat <- escalc("RR", ai = ai, n1i = n1, ci = ci, n2i = n2, slab = study)\nres <- rma(yi, vi, data = dat, method = "REML", test = "knha")\npredict(res, transf = exp); confint(res)`
+          : `# Template: vectors m1, sd1, n1, m2, sd2, n2\nlibrary(metafor)\ndat <- escalc("${outcome === 'cont-diff' ? 'SMD' : 'MD'}", m1i = m1, sd1i = sd1, n1i = n1, m2i = m2, sd2i = sd2, n2i = n2)\nres <- rma(yi, vi, data = dat, method = "REML", test = "knha")\npredict(res); confint(res)`
       modules.push(['/learn/pairwise', 'Module 2'], ['/learn/heterogeneity', 'Module 3'])
       if (few) modules.push(['/learn/bayesian', 'Module 10'])
     }

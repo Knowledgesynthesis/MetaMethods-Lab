@@ -1,240 +1,75 @@
 # MetaMethods Lab
 
-**Advanced Meta-Analytic Methods for Evidence Synthesizers**
+**Meta-analysis, learned by doing.** An interactive course of 11 modules and 26 labs, from effect sizes to network and Bayesian meta-analysis. Every number is produced by a statistical engine that is tested against R.
 
-An interactive, mobile-first educational platform for learning meta-analytic methods — from basic effect sizes to network meta-analysis.
+**Live:** https://meta-methods-lab.vercel.app
 
-## Overview
+## Modules
 
-MetaMethods Lab is a comprehensive educational tool designed for clinicians, statisticians, systematic reviewers, and evidence synthesis methodologists. It provides interactive visualizations and hands-on learning experiences for understanding complex meta-analytic concepts.
+| # | Module | Labs |
+|---|---|---|
+| 1 | Effect sizes | 2×2 calculator · OR vs RR divergence · continuous calculator (MD, Hedges' g, ROM) · data-extraction toolkit (median/IQR → mean/SD, SD from CI/SE, combining arms, log HR from CI) |
+| 2 | Pairwise meta-analysis | Forest-plot playground (edit studies live) · your-data sandbox with leave-one-out and R export |
+| 3 | Heterogeneity | "I² is not absolute" · τ² estimator comparison · CI coverage simulation (Wald vs HKSJ) |
+| 4 | Binary outcomes & rare events | MH / Peto / IV with corrections on sparse data · bias simulation |
+| 5 | Proportions & prevalence | Transformations vs GLMM · the Freeman–Tukey back-transformation trap |
+| 6 | Subgroups & meta-regression | Bubble-plot regression (REML, Knapp–Hartung, R²) · subgroup test · false-positive simulator |
+| 7 | Small-study effects & missing evidence | Publication-bias simulator · contour-enhanced funnel, Egger/Peters/Begg, trim-and-fill, PET-PEESE · ROB-ME |
+| 8 | Diagnostic test accuracy | Bivariate model with confidence/prediction regions and SROC · threshold simulator · post-test probability |
+| 9 | Network meta-analysis | Bucher calculator · network explorer (league table, P-scores, node-splitting, Q decomposition, inconsistency injector) |
+| 10 | Bayesian meta-analysis | Prior sensitivity with posterior probabilities of benefit |
+| 11 | From protocol to conclusion | Method chooser · error spotter · GRADE and PRISMA 2020 |
 
-### Key Features
+Each module follows the same loop: **predict** (commit to an answer before the data change), **experiment** (live lab), **explain** (formula, current guidance, primary source), **retrieve** (inline quick checks and a module quiz). The assessment hub has 55 questions with explanations for every answer, a mixed exam and a review of missed questions.
 
-- 🎯 **Interactive Learning Modules** covering all major meta-analytic methods
-- 📊 **Real-time Visualizations** including forest plots, funnel plots, SROC curves, and network graphs
-- 📱 **Mobile-First Design** optimized for learning on any device
-- 🌙 **Dark Mode** for comfortable viewing
-- 💾 **Offline Capability** with service worker and local storage
-- ✅ **Assessment Hub** with 15+ questions to test your knowledge
-- 📚 **Comprehensive Glossary** of meta-analytic terms
+## Methods follow current guidance
 
-## What You'll Learn
+- Cochrane Handbook v6.5.1 (chapter 10 updated November 2026): REML τ² by default; HKSJ confidence interval when τ̂² > 0 and k > 2, otherwise Wald; prediction interval μ̂ ± c·√(τ̂² + SE²) with the same multiplier as the CI; I² from τ²; Q-profile CI for τ².
+- Rare events: Mantel–Haenszel without corrections, Peto under its conditions, double-zero studies excluded from OR/RR.
+- Proportions: binomial–normal GLMM as primary analysis; Freeman–Tukey back-transformation shown with its failure mode.
+- Missing evidence: ROB-ME (Handbook chapter 13, 2024); Peters/Harbord rather than Egger for odds ratios; tests only with ≥ 10 studies.
+- DTA: bivariate/HSROC models (Cochrane DTA Handbook v2). NMA: node-splitting, design-by-treatment Q, P-scores with GRADE's minimally contextualised framework.
 
-### Core Modules
+All 92 references are listed in-app under **References**; each of the 87 DOIs was checked against Crossref.
 
-1. **Effect Size Fundamentals**
-   - Continuous outcomes: MD, SMD
-   - Binary outcomes: RR, OR, RD
-   - Time-to-event: HR (conceptual)
+## Validation
 
-2. **Pairwise Meta-analysis**
-   - Fixed-effect vs random-effects models
-   - Forest plots and interpretation
-   - Heterogeneity metrics (Q, τ², I²)
+The engine (`src/lib/stats`) is plain TypeScript with no statistical dependencies. Three test suites run with `npm test`:
 
-3. **Proportions & Transformations Lab**
-   - Freeman-Tukey double arcsine
-   - Logit transformation
-   - Arcsine transformation
-   - When and why to transform
+| Suite | What it checks |
+|---|---|
+| `engine.test.ts` (155 tests) | Numerical parity with **metafor 5.2**, **meta 9.0**, **netmeta 3.7**, **mada 0.5.12** and **bayesmeta 3.5** on 40+ simulated datasets and the BCG trials: τ² (DL, REML, PM, ML), CIs (Wald, HKSJ), prediction intervals, Q-profile CIs, escalc measures, MH/Peto, GLMM, meta-regression, subgroup tests, Egger/Peters/Begg, trim-and-fill, bivariate DTA, NMA (estimates, SEs, P-scores, node-splitting), Bayesian posteriors, distribution functions |
+| `units.test.ts` | Data-extraction conversions (against R `meta`), edge cases, Cochrane CI rule |
+| `claims.test.ts` | Every quantitative statement made in the lesson text about the course datasets |
 
-4. **Meta-regression**
-   - Study-level covariates
-   - Weighted regression
-   - Residual heterogeneity
-   - Ecological bias considerations
+Fixtures are regenerated from R with `npm run validate:r` (requires R with metafor, meta, netmeta, mada, bayesmeta, jsonlite). R code exported by the labs has been executed in R and reproduces the app's results.
 
-5. **Diagnostic Test Accuracy (DTA) Meta-analysis**
-   - Sensitivity and specificity
-   - SROC curves
-   - Bivariate and HSROC models (conceptual)
-
-6. **Network Meta-analysis**
-   - Direct vs indirect evidence
-   - Transitivity and consistency
-   - Treatment ranking (SUCRA)
-   - Bayesian vs frequentist approaches
-
-7. **Publication Bias & Small-Study Effects**
-   - Funnel plots
-   - Egger's test and other methods
-   - Trim-and-fill (with cautions)
-
-## Technology Stack
-
-- **Frontend Framework:** React 18 with TypeScript
-- **Build Tool:** Vite
-- **Styling:** Tailwind CSS
-- **UI Components:** shadcn/ui (Radix UI primitives)
-- **Charts:** Recharts
-- **State Management:** Zustand with persistence
-- **Offline Support:** Vite PWA plugin with Workbox
-- **Data Storage:** IndexedDB via idb
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ and npm (or yarn/pnpm)
-
-### Installation
+## Development
 
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
+npm run dev        # http://localhost:5173
+npm test           # 187 tests
+npm run lint       # ESLint, zero warnings
+npm run build      # type-check + production build (PWA)
 ```
 
-The app will be available at `http://localhost:5173`
-
-### Project Structure
+Requires Node 20+. Stack: React 19, TypeScript, Vite 7, Tailwind CSS 3, Zustand, KaTeX; charts are hand-written SVG (colour-blind-safe Okabe–Ito palette). The app is installable and works offline; progress is stored in the browser only.
 
 ```
 src/
-├── components/
-│   ├── ui/              # Reusable UI components (shadcn/ui)
-│   ├── layout/          # Layout components (Layout, Navigation)
-│   ├── visualizations/  # Chart components (ForestPlot, etc.)
-│   └── interactives/    # Interactive learning components
-├── pages/               # Page components for each route
-├── lib/                 # Utility functions and calculations
-│   ├── utils.ts         # General utilities and statistical functions
-│   └── metaAnalysis.ts  # Meta-analysis calculations
-├── stores/              # Zustand state management
-├── types/               # TypeScript type definitions
-├── data/                # Synthetic datasets and questions
-├── hooks/               # Custom React hooks
-└── assets/              # Static assets
+├── lib/stats/        statistical engine + tests and R fixtures
+├── pages/modules/    the 11 lessons
+├── components/       lesson blocks, labs, SVG plots, controls
+├── content/          curriculum, questions, glossary, references
+└── data/datasets.ts  synthetic teaching datasets (scripts/gen-datasets.mjs, seeded)
+scripts/r/make-fixtures.R   reference results from R
 ```
 
-## Educational Philosophy
+Deployment: Vercel (`vercel.json` rewrites client-side routes to `index.html`).
 
-This app follows these principles:
-
-1. **Evidence-Based**: All methods align with Cochrane Handbook and standard meta-analysis texts
-2. **Hands-On Learning**: Interactive visualizations let you manipulate parameters and see results
-3. **Progressive Complexity**: Start simple, build to advanced concepts
-4. **Synthetic Data Only**: All examples use fabricated study-level data
-5. **Methodologically Rigorous**: No statistical shortcuts or oversimplifications
-
-## Important Disclaimers
-
-⚠️ **Educational Use Only**
-
-This application is designed for learning meta-analytic concepts. It should NOT be used for:
-- Real systematic reviews or meta-analyses
-- Clinical decision-making
-- Publication-quality analyses
-
-For real meta-analyses, use validated statistical software:
-- **R packages**: meta, metafor, netmeta, mada
-- **Stata**: meta, metan, network
-- **RevMan**: Cochrane's Review Manager
-- **Comprehensive Meta-Analysis (CMA)**
-
-⚠️ **Synthetic Data**
-
-All datasets in this app are synthetic and do not represent real clinical trials or patients.
-
-## Key Concepts Covered
-
-### Statistical Methods
-
-- Inverse-variance weighting
-- DerSimonian-Laird random-effects
-- Variance-stabilizing transformations
-- Weighted regression
-- Bivariate random-effects models (conceptual)
-- Network meta-analysis frameworks
-
-### Interpretation Skills
-
-- Forest plot reading
-- Heterogeneity assessment
-- Publication bias detection
-- Effect measure selection
-- Confidence interval interpretation
-- Clinical vs statistical significance
-
-### Advanced Topics
-
-- Meta-regression and ecological bias
-- Network meta-analysis assumptions
-- DTA meta-analysis challenges
-- Rare events handling
-- Continuity corrections
-- Bayesian vs frequentist perspectives
-
-## Assessment
-
-Test your knowledge with 15+ multiple-choice questions covering:
-- Effect size selection
-- Model choice (fixed vs random)
-- Transformation rationale
-- Heterogeneity interpretation
-- NMA assumptions
-- Publication bias assessment
-
-## Accessibility
-
-- WCAG 2.2 AA compliant
-- Keyboard navigation support
-- Dark mode for reduced eye strain
-- Mobile-optimized responsive design
-- Screen reader friendly semantic HTML
-
-## Browser Support
-
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 14+
-- Mobile browsers (iOS Safari, Chrome Mobile)
-
-## Offline Functionality
-
-After the first visit, the app can work offline:
-- Service worker caches all assets
-- Progress saved in IndexedDB
-- Full functionality without network connection
-
-## Contributing
-
-This is an educational project. Contributions welcome for:
-- Bug fixes
-- Additional example datasets
-- New assessment questions
-- Improved visualizations
-- Accessibility improvements
-
-## References
-
-1. **Cochrane Handbook for Systematic Reviews of Interventions** (Version 6.4)
-2. Borenstein M, et al. *Introduction to Meta-Analysis*. Wiley, 2009
-3. Deeks JJ, et al. *Analysing data and undertaking meta-analyses*. Cochrane Handbook Chapter 10
-4. Dias S, et al. *Network Meta-Analysis for Decision Making*. Wiley, 2018
-5. Higgins JPT, Thompson SG. *Quantifying heterogeneity in a meta-analysis*. Stat Med. 2002
-6. Freeman MF, Tukey JW. *Transformations related to the angular and the square root*. Ann Math Stat. 1950
+All teaching datasets are synthetic; their generating parameters are documented in `src/data/datasets.ts`.
 
 ## License
 
-MIT License - see LICENSE file for details
-
-## Acknowledgments
-
-Inspired by the need for accessible, interactive meta-analysis education. Built with modern web technologies to make complex statistical concepts more approachable.
-
----
-
-**Version:** 1.0.0
-**Last Updated:** 2024
-**Status:** Production-ready educational tool
-
-For questions, issues, or feedback, please open an issue on GitHub.
+MIT

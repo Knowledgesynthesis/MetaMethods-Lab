@@ -47,8 +47,8 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-3">
           {[
             { k: '11', v: 'modules', icon: GraduationCap },
-            { k: '30+', v: 'interactive labs', icon: FlaskConical },
-            { k: '170', v: 'automated checks against R', icon: ShieldCheck },
+            { k: '26', v: 'interactive labs', icon: FlaskConical },
+            { k: '155', v: 'test cases matched against R', icon: ShieldCheck },
             { k: `${Math.round(totalMin / 60)} h`, v: 'total study time', icon: Clock },
           ].map(({ k, v, icon: Icon }) => (
             <div key={v} className="rounded-xl border bg-card p-4">

@@ -44,7 +44,7 @@ export const MODULES: ModuleMeta[] = [
     minutes: 45,
     group: 'Foundations',
     prereq: ['effect-sizes'],
-    labs: ['Forest-plot playground', 'Leave-one-out', 'Your-data sandbox + R code'],
+    labs: ['Forest-plot playground', 'Your-data sandbox + R code'],
   },
   {
     id: 'heterogeneity',
@@ -66,7 +66,7 @@ export const MODULES: ModuleMeta[] = [
     minutes: 30,
     group: 'Special data',
     prereq: ['pairwise'],
-    labs: ['Zero-cell explorer', 'Method comparison'],
+    labs: ['Method comparison on sparse data', 'Bias simulation'],
   },
   {
     id: 'proportions',
@@ -77,7 +77,7 @@ export const MODULES: ModuleMeta[] = [
     minutes: 35,
     group: 'Special data',
     prereq: ['heterogeneity'],
-    labs: ['Transformation lab', 'Freeman–Tukey trap', 'GLMM vs two-stage'],
+    labs: ['Transformations vs GLMM', 'Freeman–Tukey trap'],
   },
   {
     id: 'meta-regression',
@@ -99,7 +99,7 @@ export const MODULES: ModuleMeta[] = [
     minutes: 40,
     group: 'Advanced',
     prereq: ['heterogeneity'],
-    labs: ['Publication-bias simulator', 'Contour-enhanced funnel', 'Trim-and-fill'],
+    labs: ['Publication-bias simulator', 'Contour funnel, tests, trim-and-fill'],
   },
   {
     id: 'dta',
@@ -121,7 +121,7 @@ export const MODULES: ModuleMeta[] = [
     minutes: 50,
     group: 'Advanced',
     prereq: ['heterogeneity'],
-    labs: ['Bucher calculator', 'Network explorer', 'Inconsistency injector'],
+    labs: ['Bucher calculator', 'Network explorer & inconsistency injector'],
   },
   {
     id: 'bayesian',
@@ -132,7 +132,7 @@ export const MODULES: ModuleMeta[] = [
     minutes: 35,
     group: 'Advanced',
     prereq: ['heterogeneity'],
-    labs: ['Prior sensitivity lab', 'Posterior probability of benefit'],
+    labs: ['Prior sensitivity & probability of benefit'],
   },
   {
     id: 'workflow',

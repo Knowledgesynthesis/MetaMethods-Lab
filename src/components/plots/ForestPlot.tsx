@@ -122,8 +122,23 @@ export function ForestPlot({
               key={i}
               opacity={faded ? 0.35 : 1}
               onClick={onRowClick ? () => onRowClick(i) : undefined}
-              className={onRowClick ? 'cursor-pointer' : undefined}
+              onKeyDown={
+                onRowClick
+                  ? (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        onRowClick(i)
+                      }
+                    }
+                  : undefined
+              }
+              tabIndex={onRowClick ? 0 : undefined}
+              role={onRowClick ? 'button' : undefined}
+              aria-label={onRowClick ? `Select ${r.label}` : undefined}
+              aria-pressed={onRowClick ? highlight === i : undefined}
+              className={onRowClick ? 'cursor-pointer outline-none focus-visible:[&>rect:first-child]:fill-[hsl(var(--primary)/0.15)]' : undefined}
             >
+              {onRowClick && <rect x={0} y={cy - ROW / 2} width={width} height={ROW} fill="transparent" />}
               {highlight === i && <rect x={0} y={cy - ROW / 2} width={width} height={ROW} fill="hsl(var(--primary))" opacity={0.08} />}
               <text x={0} y={cy} dy="0.32em" fontSize={12} fill={C.fg}>
                 {r.label.length > (narrow ? 13 : 22) ? r.label.slice(0, narrow ? 12 : 21) + '…' : r.label}
