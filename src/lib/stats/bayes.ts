@@ -5,7 +5,7 @@
  * (the approach of Röver 2020, bayesmeta). No MCMC, so results are deterministic.
  * Verified against bayesmeta::bayesmeta().
  */
-import { pnorm } from './distributions'
+import { pnormFast as pnorm } from './distributions'
 
 export type TauPrior =
   | { kind: 'halfnormal'; scale: number }
@@ -52,7 +52,7 @@ function quantileFromCDF(cdf: (x: number) => number, q: number, lo: number, hi: 
 }
 
 export function bayesMeta(yi: number[], vi: number[], opts: BayesOptions): BayesResult {
-  const G = opts.gridSize ?? 1500
+  const G = opts.gridSize ?? 900
   const range = Math.max(...yi) - Math.min(...yi)
   const maxSE = Math.sqrt(Math.max(...vi))
   const priorUpper =
@@ -105,9 +105,11 @@ export function bayesMeta(yi: number[], vi: number[], opts: BayesOptions): Bayes
   const post = dens.map((d) => d / Z)
   const mass = post.map((d, g) => d * trap[g])
 
-  const muCDF = (x: number) => comps.reduce((a, c, g) => a + mass[g] * pnorm((x - c.m) / c.sd), 0)
-  const predCDF = (x: number) =>
-    comps.reduce((a, c, g) => a + mass[g] * pnorm((x - c.m) / Math.sqrt(c.sd ** 2 + c.t ** 2)), 0)
+  // mixture components with non-negligible posterior mass (speeds up CDF evaluations)
+  const live = comps.map((c, g) => ({ c, w: mass[g], sp: Math.sqrt(c.sd ** 2 + c.t ** 2) })).filter((x) => x.w > 1e-12)
+  const liveW = live.reduce((a, x) => a + x.w, 0)
+  const muCDF = (x: number) => live.reduce((a, l) => a + l.w * pnorm((x - l.c.m) / l.c.sd), 0) / liveW
+  const predCDF = (x: number) => live.reduce((a, l) => a + l.w * pnorm((x - l.c.m) / l.sp), 0) / liveW
   const muMean = comps.reduce((a, c, g) => a + mass[g] * c.m, 0)
   const muVar = comps.reduce((a, c, g) => a + mass[g] * (c.sd ** 2 + c.m ** 2), 0) - muMean ** 2
   const lo = Math.min(...yi) - 10 * maxSE - 5 * tMax

@@ -127,7 +127,7 @@ export function dnorm(x: number, mean = 0, sd = 1): number {
   return Math.exp(-0.5 * z * z) / (sd * Math.sqrt(2 * Math.PI))
 }
 
-/** Standard normal CDF, accurate in both tails. */
+/** Standard normal CDF, accurate to ~1e-15 relative in both tails (via the incomplete gamma function). */
 export function pnorm(x: number, mean = 0, sd = 1): number {
   const z = (x - mean) / sd
   if (Number.isNaN(z)) return NaN
@@ -135,6 +135,45 @@ export function pnorm(x: number, mean = 0, sd = 1): number {
   if (z === -Infinity) return 0
   const q = 0.5 * gammaQ(0.5, (z * z) / 2) // P(|Z| > |z|) / 2
   return z < 0 ? q : 1 - q
+}
+
+/**
+ * Fast standard normal CDF — Hart's algorithm 5666 (West 2005). Absolute error < 1e-14,
+ * relative error ~1e-8 for |z| > 7. Used in tight loops (Bayesian mixtures), not for p-values.
+ */
+export function pnormFast(z: number): number {
+  if (Number.isNaN(z)) return NaN
+  const a = Math.abs(z)
+  let c: number
+  if (a > 37) c = 0
+  else {
+    const e = Math.exp((-a * a) / 2)
+    if (a < 7.07106781186547) {
+      let b = 3.52624965998911e-2 * a + 0.700383064443688
+      b = b * a + 6.37396220353165
+      b = b * a + 33.912866078383
+      b = b * a + 112.079291497871
+      b = b * a + 221.213596169931
+      b = b * a + 220.206867912376
+      c = e * b
+      b = 8.83883476483184e-2 * a + 1.75566716318264
+      b = b * a + 16.064177579207
+      b = b * a + 86.7807322029461
+      b = b * a + 296.564248779674
+      b = b * a + 637.333633378831
+      b = b * a + 793.826512519948
+      b = b * a + 440.413735824752
+      c /= b
+    } else {
+      let b = a + 0.65
+      b = a + 4 / b
+      b = a + 3 / b
+      b = a + 2 / b
+      b = a + 1 / b
+      c = e / b / 2.506628274631
+    }
+  }
+  return z > 0 ? 1 - c : c
 }
 
 /** Upper tail P(Z > z) without cancellation. */
