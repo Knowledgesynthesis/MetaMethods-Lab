@@ -181,6 +181,7 @@ export function pnormUpper(z: number): number {
   return pnorm(-z)
 }
 
+/* eslint-disable no-loss-of-precision -- published AS 241 coefficients are kept verbatim */
 /** Standard normal quantile — Wichura AS 241 (PPND16). */
 export function qnorm(p: number, mean = 0, sd = 1): number {
   if (p <= 0) return -Infinity
@@ -224,6 +225,8 @@ export function qnorm(p: number, mean = 0, sd = 1): number {
   if (q < 0) val = -val
   return mean + sd * val
 }
+
+/* eslint-enable no-loss-of-precision */
 
 // ---------------------------------------------------------------- Student t
 
