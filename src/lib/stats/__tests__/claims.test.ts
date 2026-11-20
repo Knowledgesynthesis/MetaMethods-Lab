@@ -8,6 +8,8 @@ import { binaryEffect, isDoubleZero, meanDifference } from '../effectSizes'
 import { metaAnalysis } from '../pairwise'
 import { mantelHaenszel, peto } from '../binary'
 import { poolGLMM, poolTransformed } from '../proportions'
+import { metaRegression } from '../metaRegression'
+import { rng } from '../random'
 import { qnorm } from '../distributions'
 
 describe('Module 2 claims', () => {
@@ -91,6 +93,42 @@ describe('Module 5 claims', () => {
     const g = poolGLMM(TRAP).estimate
     expect(g).toBeGreaterThan(0.002)
     expect(g).toBeLessThan(0.003)
+  })
+})
+
+describe('Module 6 claims', () => {
+  const E = DOSE_TRIALS.map((s) => ({ ...s, ...binaryEffect(s, 'OR') }))
+  const fit = (k: number, method: 'REML' | 'FE', test: 'knha' | 'z') =>
+    metaRegression(E.slice(0, k).map((s) => s.yi), E.slice(0, k).map((s) => s.vi), E.slice(0, k).map((s) => [1, s.dose]), { method, test })
+  it('dose slope is detected with 18 trials and is consistent with the truth', () => {
+    const f = fit(18, 'REML', 'knha')
+    expect(f.pval[1]).toBeLessThan(0.01)
+    expect(f.ci[1][0] * 10).toBeLessThan(-0.12)
+    expect(f.ci[1][1] * 10).toBeGreaterThan(-0.12)
+  })
+  it('ignoring residual τ² gives a narrower slope CI', () => {
+    const a = fit(18, 'REML', 'knha')
+    const b = fit(18, 'FE', 'z')
+    expect(b.ci[1][1] - b.ci[1][0]).toBeLessThan(a.ci[1][1] - a.ci[1][0])
+  })
+  it('R² reaches 100% at k = 10 because residual τ² hits zero', () => {
+    const f = fit(10, 'REML', 'knha')
+    expect(f.tau2).toBe(0)
+    expect(f.R2).toBe(100)
+  })
+  it('fixed-effect meta-regression has an inflated false-positive rate, KH does not', () => {
+    const r = rng(3)
+    const hits = [0, 0]
+    const n = 600
+    for (let s = 0; s < n; s++) {
+      const vi = Array.from({ length: 10 }, () => 0.02 + 0.2 * r.uniform())
+      const yi = vi.map((v) => r.normal(-0.3, Math.sqrt(v + 0.09)))
+      const X = Array.from({ length: 10 }, () => [1, r.normal()])
+      if (metaRegression(yi, vi, X, { method: 'FE', test: 'z' }).pval[1] < 0.05) hits[0]++
+      if (metaRegression(yi, vi, X, { method: 'REML', test: 'knha' }).pval[1] < 0.05) hits[1]++
+    }
+    expect(hits[0] / n).toBeGreaterThan(0.14)
+    expect(hits[1] / n).toBeLessThan(0.08)
   })
 })
 

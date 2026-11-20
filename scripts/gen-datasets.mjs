@@ -18,8 +18,8 @@ out+=`/** Serious adverse event (rare, ~0.6% in controls). True OR 1.6 (harm). S
 {const r=rng(404);const rows=[];const ns=[28,45,60,75,110,150,190,240,320,480,650,900,1400,2600];ns.forEach((n,i)=>{const p=expit(logit(0.07)+r.n(0,0.65));rows.push({study:`${names[(i+5)%26]} ${yr(r)}`,x:r.b(n,p),n})});rows[0].x=0
 out+=`/** Prevalence of a condition in community samples. True median prevalence 7%, τ (logit) 0.65. */\nexport const PREVALENCE_STUDIES = ${J(rows)}\n\n`}
 // 5 dose meta-regression (log OR, benefit negative)
-{const r=rng(505);const rows=[];for(let i=0;i<18;i++){const dose=[10,20,25,30,40,50,60,75,80][r.int(0,8)];const blinded=r.u()<0.6;const n=r.int(60,500);const p0=0.25+0.15*r.u();const lor=-0.05-0.009*dose+(blinded?0:-0.15)+r.n(0,0.15);const p1=expit(logit(p0)+lor);const n1=n,n2=Math.round(n*(0.9+0.2*r.u()));rows.push({study:`${names[(i+2)%26]} ${2005+i}`,ai:r.b(n1,p1),n1,ci:r.b(n2,p0),n2,dose,blinded,year:2005+i})}
-out+=`/** Response failure, drug vs placebo, by daily dose (mg). True log OR = −0.05 − 0.009·dose (−0.15 if open-label), τ = 0.15. */\nexport const DOSE_TRIALS = ${J(rows)}\n\n`}
+{const r=rng(505);const rows=[];for(let i=0;i<18;i++){const dose=[10,20,25,30,40,50,60,75,80][r.int(0,8)];const blinded=r.u()<0.6;const n=r.int(60,500);const p0=0.25+0.15*r.u();const lor=-0.05-0.012*dose+(blinded?0:-0.15)+r.n(0,0.1);const p1=expit(logit(p0)+lor);const n1=n,n2=Math.round(n*(0.9+0.2*r.u()));rows.push({study:`${names[(i+2)%26]} ${2005+i}`,ai:r.b(n1,p1),n1,ci:r.b(n2,p0),n2,dose,blinded,year:2005+i})}
+out+=`/** Response failure, drug vs placebo, by daily dose (mg). True log OR = −0.05 − 0.012·dose (−0.15 if open-label), τ = 0.10. */\nexport const DOSE_TRIALS = ${J(rows)}\n\n`}
 // 6 DTA with threshold variation
 {const r=rng(606);const rows=[];for(let i=0;i<14;i++){const thr=r.n(0,0.6);const acc=2.9+r.n(0,0.35);const lsens=acc/2-thr, lfpr=-acc/2-thr;const nd=r.int(30,220), nn=r.int(80,600);rows.push({study:`${names[(i+11)%26]} ${yr(r)}`,tp:r.b(nd,expit(lsens)),fn:0,fp:r.b(nn,expit(lfpr)),tn:0,nd,nn})}
 rows.forEach(s=>{s.fn=s.nd-s.tp;s.tn=s.nn-s.fp;delete s.nd;delete s.nn})

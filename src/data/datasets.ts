@@ -60,26 +60,26 @@ export const PREVALENCE_STUDIES = [
   {"study":"Sato 2019","x":211,"n":2600},
 ]
 
-/** Response failure, drug vs placebo, by daily dose (mg). True log OR = −0.05 − 0.009·dose (−0.15 if open-label), τ = 0.15. */
+/** Response failure, drug vs placebo, by daily dose (mg). True log OR = −0.05 − 0.012·dose (−0.15 if open-label), τ = 0.10. */
 export const DOSE_TRIALS = [
   {"study":"Castillo 2005","ai":61,"n1":290,"ci":85,"n2":292,"dose":10,"blinded":false,"year":2005},
-  {"study":"Dubois 2006","ai":44,"n1":390,"ci":100,"n2":418,"dose":80,"blinded":true,"year":2006},
-  {"study":"Eriksen 2007","ai":105,"n1":447,"ci":143,"n2":422,"dose":50,"blinded":false,"year":2007},
-  {"study":"Fontaine 2008","ai":134,"n1":495,"ci":166,"n2":488,"dose":10,"blinded":true,"year":2008},
-  {"study":"Goldberg 2009","ai":80,"n1":455,"ci":129,"n2":488,"dose":60,"blinded":true,"year":2009},
-  {"study":"Haddad 2010","ai":125,"n1":489,"ci":170,"n2":442,"dose":40,"blinded":true,"year":2010},
-  {"study":"Ito 2011","ai":64,"n1":399,"ci":122,"n2":381,"dose":80,"blinded":true,"year":2011},
-  {"study":"Jansen 2012","ai":47,"n1":226,"ci":48,"n2":218,"dose":75,"blinded":true,"year":2012},
-  {"study":"Kowalski 2013","ai":57,"n1":264,"ci":81,"n2":276,"dose":40,"blinded":true,"year":2013},
-  {"study":"Larsen 2014","ai":54,"n1":184,"ci":68,"n2":176,"dose":50,"blinded":true,"year":2014},
+  {"study":"Dubois 2006","ai":33,"n1":390,"ci":100,"n2":418,"dose":80,"blinded":true,"year":2006},
+  {"study":"Eriksen 2007","ai":88,"n1":447,"ci":143,"n2":422,"dose":50,"blinded":false,"year":2007},
+  {"study":"Fontaine 2008","ai":126,"n1":495,"ci":166,"n2":488,"dose":10,"blinded":true,"year":2008},
+  {"study":"Goldberg 2009","ai":67,"n1":455,"ci":129,"n2":488,"dose":60,"blinded":true,"year":2009},
+  {"study":"Haddad 2010","ai":112,"n1":489,"ci":170,"n2":442,"dose":40,"blinded":true,"year":2010},
+  {"study":"Ito 2011","ai":54,"n1":399,"ci":122,"n2":381,"dose":80,"blinded":true,"year":2011},
+  {"study":"Jansen 2012","ai":35,"n1":226,"ci":48,"n2":218,"dose":75,"blinded":true,"year":2012},
+  {"study":"Kowalski 2013","ai":51,"n1":264,"ci":81,"n2":276,"dose":40,"blinded":true,"year":2013},
+  {"study":"Larsen 2014","ai":48,"n1":184,"ci":68,"n2":176,"dose":50,"blinded":true,"year":2014},
   {"study":"Moreau 2015","ai":42,"n1":194,"ci":57,"n2":202,"dose":25,"blinded":true,"year":2015},
-  {"study":"Nakamura 2016","ai":39,"n1":259,"ci":88,"n2":284,"dose":40,"blinded":false,"year":2016},
-  {"study":"Okafor 2017","ai":100,"n1":453,"ci":129,"n2":420,"dose":20,"blinded":false,"year":2017},
-  {"study":"Petrov 2018","ai":21,"n1":79,"ci":33,"n2":72,"dose":20,"blinded":true,"year":2018},
-  {"study":"Quinn 2019","ai":64,"n1":279,"ci":117,"n2":300,"dose":50,"blinded":true,"year":2019},
-  {"study":"Rossi 2020","ai":22,"n1":110,"ci":31,"n2":117,"dose":30,"blinded":false,"year":2020},
-  {"study":"Sato 2021","ai":26,"n1":175,"ci":57,"n2":159,"dose":80,"blinded":false,"year":2021},
-  {"study":"Tanaka 2022","ai":66,"n1":482,"ci":144,"n2":442,"dose":50,"blinded":false,"year":2022},
+  {"study":"Nakamura 2016","ai":36,"n1":259,"ci":88,"n2":284,"dose":40,"blinded":false,"year":2016},
+  {"study":"Okafor 2017","ai":93,"n1":453,"ci":129,"n2":420,"dose":20,"blinded":false,"year":2017},
+  {"study":"Petrov 2018","ai":22,"n1":79,"ci":33,"n2":72,"dose":20,"blinded":true,"year":2018},
+  {"study":"Quinn 2019","ai":57,"n1":279,"ci":117,"n2":300,"dose":50,"blinded":true,"year":2019},
+  {"study":"Rossi 2020","ai":17,"n1":110,"ci":31,"n2":117,"dose":30,"blinded":false,"year":2020},
+  {"study":"Sato 2021","ai":19,"n1":175,"ci":57,"n2":159,"dose":80,"blinded":false,"year":2021},
+  {"study":"Tanaka 2022","ai":56,"n1":482,"ci":144,"n2":442,"dose":50,"blinded":false,"year":2022},
 ]
 
 /** Rapid antigen test vs reference standard. Studies use different positivity thresholds (threshold effect). */
