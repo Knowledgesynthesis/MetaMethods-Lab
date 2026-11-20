@@ -2,6 +2,7 @@
 #   Rscript scripts/r/make-fixtures.R
 # Output: src/lib/stats/__tests__/fixtures/*.json
 # Packages: metafor, meta, netmeta, mada, bayesmeta, jsonlite
+CTRL <- list(maxiter = 2000, threshold = 1e-13, tol = 1e-13, stepadj = 0.5)
 suppressPackageStartupMessages({
   library(metafor); library(meta); library(netmeta); library(mada); library(bayesmeta); library(jsonlite)
 })
@@ -45,10 +46,10 @@ pw_out <- lapply(pw_sets, function(d) {
   for (m in c("REML", "DL", "PM", "ML")) {
     for (tst in c("z", "knha")) {
       if (tst == "knha" && length(d$yi) < 2) next
-      f <- try(rma(d$yi, d$vi, method = m, test = tst, control = list(maxiter = 1000, threshold = 1e-12)), silent = TRUE)
+      f <- try(rma(d$yi, d$vi, method = m, test = tst, control = CTRL), silent = TRUE)
       if (inherits(f, "try-error")) next
       pr <- predict(f)
-      ci <- if (length(d$yi) > 2) try(confint(f), silent = TRUE) else NULL
+      ci <- if (length(d$yi) > 2) try(confint(f, control = list(tol = 1e-13)), silent = TRUE) else NULL
       entry <- list(est = f$beta[1], se = f$se, ci = c(f$ci.lb, f$ci.ub), pval = f$pval,
                     tau2 = f$tau2, I2 = f$I2, H2 = f$H2, pi = c(pr$pi.lb, pr$pi.ub))
       if (!is.null(ci) && !inherits(ci, "try-error")) entry$tau2CI <- as.numeric(ci$random["tau^2", 2:3])
@@ -120,10 +121,10 @@ pp <- lapply(1:12, function(i) {
   mu <- qlogis(runif(1, 0.02, 0.4)); tau <- sample(c(0, 0.3, 0.8), 1)
   x <- rbinom(k, n, plogis(rnorm(k, mu, tau)))
   r <- list(x = x, n = n)
-  f <- rma(measure = "PFT", xi = x, ni = n, method = "REML")
+  f <- rma(measure = "PFT", xi = x, ni = n, method = "REML", control = CTRL)
   pr <- predict(f, transf = transf.ipft.hm, targs = list(ni = n))
   r$PFT <- list(est = f$beta[1], se = f$se, tau2 = f$tau2, back = pr$pred, back_ci = c(pr$ci.lb, pr$ci.ub))
-  f2 <- rma(measure = "PLO", xi = x, ni = n, method = "REML")
+  f2 <- rma(measure = "PLO", xi = x, ni = n, method = "REML", control = CTRL)
   r$PLO <- list(est = f2$beta[1], se = f2$se, tau2 = f2$tau2)
   g <- try(rma.glmm(measure = "PLO", xi = x, ni = n), silent = TRUE)
   if (!inherits(g, "try-error")) r$GLMM <- list(est = g$beta[1], se = g$se, tau2 = g$tau2)
@@ -134,7 +135,7 @@ save(pp, "proportions")
 # ---------------------------------------------------------------- meta-regression
 reg <- list()
 for (m in c("REML", "DL")) for (tst in c("z", "knha")) {
-  f <- rma(yi, vi, mods = ~ ablat, data = bcg, method = m, test = tst)
+  f <- rma(yi, vi, mods = ~ ablat, data = bcg, method = m, test = tst, control = CTRL)
   reg[[length(reg) + 1]] <- list(name = "BCG-ablat", method = m, test = tst, yi = as.numeric(bcg$yi), vi = as.numeric(bcg$vi),
                                  X = cbind(1, dat.bcg$ablat), beta = as.numeric(f$beta), se = f$se, tau2 = f$tau2,
                                  QE = f$QE, QM = f$QM, QMp = f$QMp, R2 = ifelse(is.null(f$R2), NA, f$R2), I2 = f$I2,
@@ -146,7 +147,7 @@ for (i in 1:8) {
   x1 <- runif(k, 0, 10); x2 <- rbinom(k, 1, 0.5); vi <- runif(k, 0.01, 0.2)
   yi <- 0.1 + 0.05 * x1 - 0.2 * x2 + rnorm(k, 0, sqrt(vi + 0.05))
   for (m in c("REML", "DL")) for (tst in c("z", "knha")) {
-    f <- rma(yi, vi, mods = ~ x1 + x2, method = m, test = tst)
+    f <- rma(yi, vi, mods = ~ x1 + x2, method = m, test = tst, control = CTRL)
     reg[[length(reg) + 1]] <- list(name = paste0("sim", i), method = m, test = tst, yi = yi, vi = vi, X = cbind(1, x1, x2),
                                    beta = as.numeric(f$beta), se = f$se, tau2 = f$tau2, QE = f$QE, QM = f$QM, QMp = f$QMp,
                                    R2 = ifelse(is.null(f$R2), NA, f$R2), I2 = f$I2, pval = f$pval)
@@ -167,9 +168,11 @@ pb <- lapply(1:15, function(i) {
   yi <- rnorm(k, 0.3 + 0.8 * sqrt(vi) * sample(c(0, 1, 2), 1), sqrt(vi + 0.02))
   r <- list(yi = yi, vi = vi)
   for (m in c("REML", "DL", "EE")) {
-    f <- rma(yi, vi, method = m)
+    f <- try(rma(yi, vi, method = m, control = CTRL), silent = TRUE)
+    if (inherits(f, "try-error")) next
     eg <- regtest(f, model = "lm", predictor = "sei")
-    tf <- trimfill(f)
+    tf <- try(trimfill(f), silent = TRUE)
+    if (inherits(tf, "try-error")) next
     r[[m]] <- list(egger_t = eg$zval, egger_p = eg$pval, egger_limit = as.numeric(eg$est),
                    tf_k0 = tf$k0, tf_side = tf$side, tf_est = tf$beta[1], tf_se = tf$se)
   }
@@ -251,9 +254,11 @@ for (i in 1:5) {
     f <- bayesmeta(y = yi, sigma = sqrt(vi), mu.prior.mean = 0, mu.prior.sd = 4,
                    tau.prior = function(t) dhalfnormal(t, scale = sc))
     s <- f$summary
+    mci <- f$qposterior(mu.p = c(0.025, 0.975))
+    tci <- f$qposterior(theta.p = c(0.025, 0.975), predict = TRUE)
     bm[[length(bm) + 1]] <- list(yi = yi, vi = vi, scale = sc, prior = "halfnormal",
-                                 mu_median = s["median", "mu"], mu_lo = s["95% lower", "mu"], mu_hi = s["95% upper", "mu"],
-                                 tau_median = s["median", "tau"], theta_lo = s["95% lower", "theta"], theta_hi = s["95% upper", "theta"],
+                                 mu_median = s["median", "mu"], mu_lo = mci[1], mu_hi = mci[2],
+                                 tau_median = s["median", "tau"], theta_lo = tci[1], theta_hi = tci[2],
                                  mu_mean = s["mean", "mu"])
   }
 }

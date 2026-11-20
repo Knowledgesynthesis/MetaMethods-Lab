@@ -23,6 +23,7 @@ export interface MetaRegResult {
   vcov: Matrix
   tau2: number
   I2res: number
+  /** null when the intercept-only model has τ² = 0 (nothing to explain) */
   R2: number | null
   QE: number
   QEdf: number
@@ -133,7 +134,7 @@ export function metaRegression(
   let R2: number | null = null
   if (intercept && method !== 'FE' && p > 1) {
     const m0 = metaAnalysis(yi, vi, { tau2Method: method as Tau2Method })
-    R2 = m0.tau2 > 0 ? Math.max(0, (100 * (m0.tau2 - tau2)) / m0.tau2) : 0
+    R2 = m0.tau2 > 1e-8 ? Math.max(0, (100 * (m0.tau2 - tau2)) / m0.tau2) : null
   }
 
   const predict = (x0: number[]) => {

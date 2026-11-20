@@ -131,9 +131,9 @@ function heterogeneityAround(studies: TwoByTwo[], measure: BinaryMeasure, est: n
   const ws: number[] = []
   for (const s of studies) {
     const dz = (s.ai === 0 && s.ci === 0) || (s.ai === s.n1 && s.ci === s.n2)
-    if (dz && measure !== 'RD') continue
+    if (dz) continue
     const zero = s.ai === 0 || s.ci === 0 || s.ai === s.n1 || s.ci === s.n2
-    const k = zero && measure !== 'RD' ? 0.5 : 0
+    const k = zero ? 0.5 : 0
     const a = s.ai + k
     const b = s.n1 - s.ai + k
     const c = s.ci + k

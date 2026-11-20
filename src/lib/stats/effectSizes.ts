@@ -42,12 +42,14 @@ export function hedgesG(t: ArmContinuous, c: ArmContinuous): EffectEstimate & { 
   return { yi: g, vi: 1 / t.n + 1 / c.n + (g * g) / (2 * (t.n + c.n)), d, J }
 }
 
-/** Log ratio of means (requires positive means on a ratio scale). */
-export function logRatioOfMeans(t: ArmContinuous, c: ArmContinuous): EffectEstimate {
-  return {
-    yi: Math.log(t.mean / c.mean),
-    vi: (t.sd * t.sd) / (t.n * t.mean * t.mean) + (c.sd * c.sd) / (c.n * c.mean * c.mean),
-  }
+/**
+ * Log ratio of means (positive means on a ratio scale), with the small-sample bias correction of
+ * Lajeunesse (2015): ln(m1/m2) + ½[sd1²/(n1·m1²) − sd2²/(n2·m2²)] (metafor ≥ 4 default).
+ */
+export function logRatioOfMeans(t: ArmContinuous, c: ArmContinuous, biasCorrected = true): EffectEstimate {
+  const a = (t.sd * t.sd) / (t.n * t.mean * t.mean)
+  const b = (c.sd * c.sd) / (c.n * c.mean * c.mean)
+  return { yi: Math.log(t.mean / c.mean) + (biasCorrected ? 0.5 * (a - b) : 0), vi: a + b }
 }
 
 // ------------------------------------------------------------------ Binary outcomes
@@ -169,32 +171,38 @@ export interface MedianSummary {
   max?: number
 }
 
+// Wan et al. (2014) Table 1 (expected range, n = 1…50) and Table 2 (expected IQR, Q = 1…50, n = 4Q+1)
+const WAN_T1 = [0, 1.128, 1.693, 2.059, 2.326, 2.534, 2.704, 2.847, 2.97, 3.078, 3.173, 3.259, 3.336, 3.407, 3.472, 3.532, 3.588, 3.64, 3.689, 3.735, 3.778, 3.819, 3.858, 3.895, 3.931, 3.964, 3.997, 4.027, 4.057, 4.086, 4.113, 4.139, 4.165, 4.189, 4.213, 4.236, 4.259, 4.28, 4.301, 4.322, 4.341, 4.361, 4.379, 4.398, 4.415, 4.433, 4.45, 4.466, 4.482, 4.498]
+const WAN_T2 = [0.99, 1.144, 1.206, 1.239, 1.26, 1.274, 1.284, 1.292, 1.298, 1.303, 1.307, 1.311, 1.313, 1.316, 1.318, 1.32, 1.322, 1.323, 1.324, 1.326, 1.327, 1.328, 1.329, 1.33, 1.33, 1.331, 1.332, 1.332, 1.333, 1.333, 1.334, 1.334, 1.335, 1.335, 1.336, 1.336, 1.336, 1.337, 1.337, 1.337, 1.338, 1.338, 1.338, 1.338, 1.339, 1.339, 1.339, 1.339, 1.339, 1.34]
+
+const wanXi = (n: number) => (n > 50 ? 2 * qnorm((n - 0.375) / (n + 0.25)) : WAN_T1[Math.round(n) - 1])
+const wanEta = (n: number) => (n > 201 ? 2 * qnorm((0.75 * n - 0.125) / (n + 0.25)) : WAN_T2[Math.ceil(0.25 * (n - 1)) - 1])
+
 /**
- * Estimate mean and SD from median-based summaries.
- * Mean: Luo et al. (2018). SD: Wan et al. (2014) for {min,max} or {q1,q3}; Shi et al. (2020) for all five.
- * These assume approximate normality; check skewness before use.
+ * Estimate mean and SD from median-based summaries (as implemented in R meta ≥ 6).
+ * Mean: Luo et al. (2018). SD: Wan et al. (2014) for {min, max} or {q1, q3}; Shi et al. (2020) for all five.
+ * These assume approximate normality — check for skewness (e.g. mean − median relative to IQR) before use.
  */
 export function meanSDFromMedian(s: MedianSummary): { mean: number; sd: number; scenario: 'S1' | 'S2' | 'S3' } | null {
   const { n, median: m, q1, q3, min: a, max: b } = s
+  if (!(n >= 2)) return null
   const hasRange = a !== undefined && b !== undefined
   const hasIQR = q1 !== undefined && q3 !== undefined
-  const xi = 2 * qnorm((n - 0.375) / (n + 0.25))
-  const eta = 2 * qnorm((0.75 * n - 0.125) / (n + 0.25))
   if (hasRange && hasIQR) {
     const w3 = 2.2 / (2.2 + n ** 0.75)
     const w4 = 0.7 - 0.72 / n ** 0.55
     const mean = w3 * ((a! + b!) / 2) + w4 * ((q1! + q3!) / 2) + (1 - w3 - w4) * m
-    const ws = 1 / (1 + 0.07 * n ** 0.6)
-    const sd = ws * ((b! - a!) / xi) + (1 - ws) * ((q3! - q1!) / eta)
-    return { mean, sd, scenario: 'S3' }
+    const theta1 = (2 + 0.14 * n ** 0.6) * qnorm((n - 0.375) / (n + 0.25))
+    const theta2 = (2 + 2 / (0.07 * n ** 0.6)) * qnorm((0.75 * n - 0.125) / (n + 0.25))
+    return { mean, sd: (b! - a!) / theta1 + (q3! - q1!) / theta2, scenario: 'S3' }
   }
   if (hasRange) {
     const w1 = 4 / (4 + n ** 0.75)
-    return { mean: w1 * ((a! + b!) / 2) + (1 - w1) * m, sd: (b! - a!) / xi, scenario: 'S1' }
+    return { mean: w1 * ((a! + b!) / 2) + (1 - w1) * m, sd: (b! - a!) / wanXi(n), scenario: 'S1' }
   }
   if (hasIQR) {
     const w2 = 0.7 + 0.39 / n
-    return { mean: w2 * ((q1! + q3!) / 2) + (1 - w2) * m, sd: (q3! - q1!) / eta, scenario: 'S2' }
+    return { mean: w2 * ((q1! + q3!) / 2) + (1 - w2) * m, sd: (q3! - q1!) / wanEta(n), scenario: 'S2' }
   }
   return null
 }
